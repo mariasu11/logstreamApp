@@ -1,0 +1,76 @@
+modules = ["go", "go-1.21"]
+
+[nix]
+channel = "stable-24_05"
+
+[workflows]
+runButton = "Project"
+
+[[workflows.workflow]]
+name = "Project"
+mode = "parallel"
+author = "agent"
+
+[[workflows.workflow.tasks]]
+task = "workflow.run"
+args = "LogStream"
+
+[[workflows.workflow.tasks]]
+task = "workflow.run"
+args = "logstream_test"
+
+[[workflows.workflow.tasks]]
+task = "workflow.run"
+args = "ServeCommand"
+
+[[workflows.workflow.tasks]]
+task = "workflow.run"
+args = "BuildAndTest"
+
+[[workflows.workflow.tasks]]
+task = "workflow.run"
+args = "ServeAPI"
+
+[[workflows.workflow]]
+name = "LogStream"
+author = "agent"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "go run cmd/logstream/root.go cmd/logstream/main.go cmd/logstream/serve.go --help"
+
+[[workflows.workflow]]
+name = "logstream_test"
+author = "agent"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "go build -o logstream ./cmd/logstream && ./logstream --help"
+
+[[workflows.workflow]]
+name = "ServeCommand"
+author = "agent"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "go run cmd/logstream/root.go cmd/logstream/main.go cmd/logstream/serve.go serve --help"
+
+[[workflows.workflow]]
+name = "BuildAndTest"
+author = "agent"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "go build -o logstream ./cmd/logstream && ./logstream --help"
+
+[[workflows.workflow]]
+name = "ServeAPI"
+author = "agent"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "go run cmd/logstream/root.go cmd/logstream/main.go cmd/logstream/serve.go serve --host=0.0.0.0 --port=5000"
+waitForPort = 5000
+
+[deployment]
+run = ["sh", "-c", "go run cmd/logstream/root.go cmd/logstream/main.go cmd/logstream/serve.go --help"]
