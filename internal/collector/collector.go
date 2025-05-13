@@ -7,7 +7,7 @@ import (
         "path/filepath"
         "strings"
 
-        "github.com/mariasu11/logstream/internal/processor"
+        "github.com/mariasu11/logstreamApp/internal/processor"
 )
 
 // Collector defines the interface for log collectors

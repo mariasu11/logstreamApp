@@ -7,8 +7,8 @@ import (
         "strconv"
         "strings"
 
-        "github.com/mariasu11/logstream/internal/storage"
-        "github.com/mariasu11/logstream/pkg/models"
+        "github.com/mariasu11/logstreamApp/internal/storage"
+        "github.com/mariasu11/logstreamApp/pkg/models"
 )
 
 // QueryEngine performs log queries and analysis

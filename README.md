@@ -2,7 +2,7 @@
 
 A high-performance log aggregation and analysis tool built in Go that demonstrates concurrent processing, plugin architecture, and robust API design.
 
-[![CI](https://github.com/mariasu11/logstream/actions/workflows/ci.yml/badge.svg)](https://github.com/mariasu11/logstream/actions/workflows/ci.yml)
+[![CI](https://github.com/mariasu11/logstreamApp/actions/workflows/ci.yml/badge.svg)](https://github.com/mariasu11/logstreamApp/actions/workflows/ci.yml)
 
 ## Features
 
@@ -22,10 +22,10 @@ A high-performance log aggregation and analysis tool built in Go that demonstrat
 
 ```bash
 # Install using Go
-go install github.com/mariasu11/logstream/cmd/logstream
+go install github.com/mariasu11/logstreamApp/cmd/logstream
 
 # Or download binary from releases
-curl -LO https://github.com/mariasu11/logstream/releases/latest/download/logstream-$(uname -s | tr '[:upper:]' '[:lower:]')-$(uname -m)
+curl -LO https://github.com/mariasu11/logstreamApp/releases/latest/download/logstream-$(uname -s | tr '[:upper:]' '[:lower:]')-$(uname -m)
 chmod +x logstream-*
 mv logstream-* /usr/local/bin/logstream
 ```

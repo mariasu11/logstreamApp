@@ -9,9 +9,9 @@ import (
         "github.com/stretchr/testify/mock"
         "github.com/stretchr/testify/require"
 
-        "github.com/mariasu11/logstream/internal/query"
-        "github.com/mariasu11/logstream/internal/storage"
-        "github.com/mariasu11/logstream/pkg/models"
+        "github.com/mariasu11/logstreamApp/internal/query"
+        "github.com/mariasu11/logstreamApp/internal/storage"
+        "github.com/mariasu11/logstreamApp/pkg/models"
 )
 
 // MockStorage implements a mock storage.Storage interface for testing

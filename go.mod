@@ -1,4 +1,4 @@
-module github.com/mariasu11/logstream
+module github.com/mariasu11/logstreamApp
 
 go 1.21
 

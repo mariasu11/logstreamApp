@@ -17,7 +17,7 @@ var (
 It collects logs from multiple sources, processes them concurrently, 
 and provides powerful query capabilities through a REST API and CLI interface.
 
-Complete documentation is available at https://github.com/mariasu11/logstream`,
+Complete documentation is available at https://github.com/mariasu11/logstreamApp`,
                 Run: func(cmd *cobra.Command, args []string) {
                         // If no subcommand is provided, print help
                         cmd.Help()

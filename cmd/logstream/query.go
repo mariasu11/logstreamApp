@@ -9,10 +9,10 @@ import (
         "github.com/spf13/cobra"
         "github.com/spf13/viper"
 
-        "github.com/mariasu11/logstream/internal/config"
-        "github.com/mariasu11/logstream/internal/query"
-        "github.com/mariasu11/logstream/internal/storage"
-        "github.com/mariasu11/logstream/pkg/models"
+        "github.com/mariasu11/logstreamApp/internal/config"
+        "github.com/mariasu11/logstreamApp/internal/query"
+        "github.com/mariasu11/logstreamApp/internal/storage"
+        "github.com/mariasu11/logstreamApp/pkg/models"
 )
 
 var (

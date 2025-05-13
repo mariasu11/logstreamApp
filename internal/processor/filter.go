@@ -5,7 +5,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/mariasu11/logstream/pkg/models"
+	"github.com/mariasu11/logstreamApp/pkg/models"
 )
 
 // Filter defines the interface for filtering log entries

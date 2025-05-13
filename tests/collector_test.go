@@ -15,12 +15,12 @@ import (
         "github.com/stretchr/testify/assert"
         "github.com/stretchr/testify/require"
 
-        "github.com/mariasu11/logstream/internal/collector"
-        "github.com/mariasu11/logstream/internal/processor"
-        "github.com/mariasu11/logstream/internal/storage"
-        "github.com/mariasu11/logstream/pkg/models"
-        "github.com/mariasu11/logstream/pkg/plugin"
-        "github.com/mariasu11/logstream/pkg/worker"
+        "github.com/mariasu11/logstreamApp/internal/collector"
+        "github.com/mariasu11/logstreamApp/internal/processor"
+        "github.com/mariasu11/logstreamApp/internal/storage"
+        "github.com/mariasu11/logstreamApp/pkg/models"
+        "github.com/mariasu11/logstreamApp/pkg/plugin"
+        "github.com/mariasu11/logstreamApp/pkg/worker"
 )
 
 type mockProcessor struct {

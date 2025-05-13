@@ -5,7 +5,7 @@ import (
         "strings"
         "time"
 
-        "github.com/mariasu11/logstream/pkg/models"
+        "github.com/mariasu11/logstreamApp/pkg/models"
 )
 
 // JSONParser is a parser for JSON-formatted logs

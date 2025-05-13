@@ -1,7 +1,7 @@
 package parser
 
 import (
-	"github.com/mariasu11/logstream/pkg/models"
+	"github.com/mariasu11/logstreamApp/pkg/models"
 )
 
 // Parser defines the interface for log parsers

@@ -11,7 +11,7 @@ import (
         "github.com/hashicorp/go-hclog"
         "github.com/prometheus/client_golang/prometheus/promhttp"
 
-        "github.com/mariasu11/logstream/internal/storage"
+        "github.com/mariasu11/logstreamApp/internal/storage"
 )
 
 // Server represents the LogStream API server

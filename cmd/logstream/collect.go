@@ -11,11 +11,11 @@ import (
         "github.com/spf13/viper"
         "golang.org/x/sync/errgroup"
 
-        "github.com/mariasu11/logstream/internal/collector"
-        "github.com/mariasu11/logstream/internal/config"
-        "github.com/mariasu11/logstream/internal/processor"
-        "github.com/mariasu11/logstream/internal/storage"
-        "github.com/mariasu11/logstream/pkg/worker"
+        "github.com/mariasu11/logstreamApp/internal/collector"
+        "github.com/mariasu11/logstreamApp/internal/config"
+        "github.com/mariasu11/logstreamApp/internal/processor"
+        "github.com/mariasu11/logstreamApp/internal/storage"
+        "github.com/mariasu11/logstreamApp/pkg/worker"
 )
 
 var (
