@@ -34,10 +34,6 @@ args = "CollectLogs"
 
 [[workflows.workflow.tasks]]
 task = "workflow.run"
-args = "LogCollector"
-
-[[workflows.workflow.tasks]]
-task = "workflow.run"
 args = "ServeAPI"
 
 [[workflows.workflow]]
@@ -79,14 +75,6 @@ author = "agent"
 [[workflows.workflow.tasks]]
 task = "shell.exec"
 args = "go run cmd/logstream/root.go cmd/logstream/main.go cmd/logstream/collect.go collect --sources=file://test_logs/test.log"
-
-[[workflows.workflow]]
-name = "LogCollector"
-author = "agent"
-
-[[workflows.workflow.tasks]]
-task = "shell.exec"
-args = "go build -o logstream ./cmd/logstream && ./logstream collect --sources=file://./test_logs/test.log"
 
 [[workflows.workflow]]
 name = "ServeAPI"

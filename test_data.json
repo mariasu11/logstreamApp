@@ -1,0 +1,14 @@
+[
+  {"timestamp":"2025-05-13T01:00:00Z","level":"info","message":"Application started","source":"app1","version":"1.0.0"},
+  {"timestamp":"2025-05-13T01:05:00Z","level":"debug","message":"Connection established","source":"app1","duration_ms":35},
+  {"timestamp":"2025-05-13T01:10:00Z","level":"info","message":"User login successful","source":"app1","user_id":"user123"},
+  {"timestamp":"2025-05-13T01:15:00Z","level":"warn","message":"High memory usage detected","source":"app1","memory_used_mb":1024},
+  {"timestamp":"2025-05-13T01:20:00Z","level":"error","message":"Database connection failed","source":"app1","error":"connection refused"},
+  {"timestamp":"2025-05-13T01:25:00Z","level":"info","message":"Cache invalidated","source":"app2","items_removed":15},
+  {"timestamp":"2025-05-13T01:30:00Z","level":"debug","message":"Processing batch job","source":"app2","batch_id":"job456"},
+  {"timestamp":"2025-05-13T01:35:00Z","level":"info","message":"API request processed","source":"app2","method":"GET","path":"/api/users","duration_ms":150},
+  {"timestamp":"2025-05-13T01:40:00Z","level":"warn","message":"Rate limit approaching","source":"app2","current_rate":95,"limit":100},
+  {"timestamp":"2025-05-13T01:45:00Z","level":"error","message":"Failed to process request","source":"app2","status_code":500,"request_id":"req789"},
+  {"timestamp":"2025-05-13T01:50:00Z","level":"info","message":"System health check","source":"monitoring","status":"ok","response_time_ms":42},
+  {"timestamp":"2025-05-13T01:55:00Z","level":"error","message":"Out of disk space","source":"server","available_mb":0}
+]
