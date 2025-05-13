@@ -104,21 +104,44 @@ func (h *Handlers) GetLogs(w http.ResponseWriter, r *http.Request) {
                 }
         }
 
-        source := r.URL.Query().Get("source")
-        level := r.URL.Query().Get("level")
+        // Handle sources as comma-separated list
+        sources := []string{}
+        if sourcesList := r.URL.Query().Get("sources"); sourcesList != "" {
+                sources = strings.Split(sourcesList, ",")
+        } else if source := r.URL.Query().Get("source"); source != "" {
+                sources = []string{source}
+        }
+
+        // Handle levels as comma-separated list
+        levels := []string{}
+        if levelsList := r.URL.Query().Get("levels"); levelsList != "" {
+                levels = strings.Split(levelsList, ",")
+        } else if level := r.URL.Query().Get("level"); level != "" {
+                levels = []string{level}
+        }
+
         filter := r.URL.Query().Get("filter")
+
+        // Debug log request parameters
+        h.logger.Debug("GetLogs request parameters", 
+                "limit", limit, 
+                "from", from, 
+                "to", to, 
+                "sources", sources, 
+                "levels", levels, 
+                "filter", filter)
 
         // Build query
         qb := storage.NewQueryBuilder().
                 WithLimit(limit).
                 WithTimeRange(from, to)
 
-        if source != "" {
-                qb.WithSources(source)
+        if len(sources) > 0 {
+                qb.WithSources(sources...)
         }
 
-        if level != "" {
-                qb.WithLevels(level)
+        if len(levels) > 0 {
+                qb.WithLevels(levels...)
         }
 
         if filter != "" {
@@ -133,6 +156,9 @@ func (h *Handlers) GetLogs(w http.ResponseWriter, r *http.Request) {
                 h.respondWithError(w, http.StatusInternalServerError, "Query failed: "+err.Error())
                 return
         }
+
+        // Debug response
+        h.logger.Debug("GetLogs response", "count", len(logs))
 
         // Respond with results
         h.respondWithJSON(w, http.StatusOK, logs)

@@ -130,6 +130,8 @@ function loadLogs() {
     // Build query parameters
     const params = buildQueryParams();
     
+    console.log('Fetching logs with params:', params);
+    
     fetch(`${config.apiBaseUrl}/logs?${params}`)
         .then(response => {
             if (!response.ok) {
@@ -138,9 +140,10 @@ function loadLogs() {
             return response.json();
         })
         .then(logs => {
-            renderLogs(logs);
-            updateSourceCounts(logs);
-            updateCharts(logs);
+            console.log('Received logs:', logs ? logs.length : 0, 'entries');
+            renderLogs(logs || []);
+            updateSourceCounts(logs || []);
+            updateCharts(logs || []);
             hideLoading();
         })
         .catch(error => {
@@ -155,34 +158,51 @@ function buildQueryParams() {
     const params = new URLSearchParams();
     
     // Add search query if any
-    const searchQuery = elements.searchInput.value.trim();
+    const searchQuery = elements.searchInput ? elements.searchInput.value.trim() : "";
     if (searchQuery) {
         params.append('filter', searchQuery);
     }
     
     // Add selected sources
     const selectedSources = [];
-    document.querySelectorAll('.source-item.active').forEach(item => {
-        selectedSources.push(item.dataset.source);
+    const sourceItems = document.querySelectorAll('.source-item.active');
+    console.log(`Selected sources: ${sourceItems.length} items`);
+    
+    sourceItems.forEach(item => {
+        const source = item.dataset.source;
+        if (source) {
+            selectedSources.push(source);
+            console.log(`Adding source to filter: ${source}`);
+        }
     });
+    
     if (selectedSources.length > 0) {
         params.append('sources', selectedSources.join(','));
     }
     
     // Add selected levels
     const selectedLevels = [];
-    elements.levelCheckboxes.forEach(checkbox => {
-        if (checkbox.checked) {
-            selectedLevels.push(checkbox.value);
-        }
-    });
+    if (elements.levelCheckboxes) {
+        elements.levelCheckboxes.forEach(checkbox => {
+            if (checkbox.checked) {
+                selectedLevels.push(checkbox.value);
+                console.log(`Adding level to filter: ${checkbox.value}`);
+            }
+        });
+    }
+    
     if (selectedLevels.length > 0) {
         params.append('levels', selectedLevels.join(','));
+    } else {
+        // Default to all levels if none selected
+        params.append('levels', 'debug,info,warn,error');
     }
     
     // Add time range
-    const timeRange = elements.timeRangeSelect.value;
-    if (timeRange === 'custom') {
+    const timeRange = elements.timeRangeSelect ? elements.timeRangeSelect.value : '24h';
+    console.log(`Time range selected: ${timeRange}`);
+    
+    if (timeRange === 'custom' && elements.startTimeInput && elements.endTimeInput) {
         const startTime = elements.startTimeInput.value;
         const endTime = elements.endTimeInput.value;
         if (startTime) {
@@ -215,6 +235,9 @@ function buildQueryParams() {
             case '30d':
                 from = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
                 break;
+            default:
+                // Default to 7 days if not specified
+                from = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
         }
         
         if (from) {
@@ -611,10 +634,28 @@ function setupEventListeners() {
         // Level checkboxes
         if (elements.levelCheckboxes) {
             elements.levelCheckboxes.forEach(checkbox => {
-                checkbox.addEventListener('change', () => loadLogs());
+                checkbox.addEventListener('change', () => {
+                    console.log(`Level checkbox changed: ${checkbox.value} = ${checkbox.checked}`);
+                    loadLogs();
+                });
             });
             console.log("Level checkbox event listeners added");
         }
+        
+        // Source item click events already added in renderSources function
+        // Make sure they update the active class and trigger loadLogs
+        document.querySelectorAll('.source-item').forEach(sourceItem => {
+            sourceItem.addEventListener('click', (e) => {
+                e.preventDefault();
+                const source = sourceItem.dataset.source;
+                console.log(`Source item clicked: ${source}`);
+                // Toggle active class
+                sourceItem.classList.toggle('active');
+                // Reload logs
+                loadLogs();
+            });
+        });
+        console.log("Source item event listeners added");
         
         console.log("All event listeners set up successfully");
     } catch (error) {

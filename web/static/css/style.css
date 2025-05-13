@@ -31,6 +31,39 @@
     background-color: #dc3545;
 }
 
+/* Log level filter checkboxes */
+.level-filter {
+    margin-right: 10px;
+    cursor: pointer;
+    transition: opacity 0.2s;
+    font-weight: 500;
+}
+
+.level-filter:hover {
+    opacity: 0.8;
+}
+
+.level-filter input[type="checkbox"] {
+    margin-right: 5px;
+    cursor: pointer;
+}
+
+.level-filter-debug {
+    color: #6c757d;
+}
+
+.level-filter-info {
+    color: #0d6efd;
+}
+
+.level-filter-warn {
+    color: #ffc107;
+}
+
+.level-filter-error {
+    color: #dc3545;
+}
+
 /* Source badges */
 .source-badge {
     display: inline-block;
@@ -63,10 +96,21 @@
     text-overflow: ellipsis;
 }
 
+/* Source items in sidebar */
+.source-item {
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+.source-item:hover {
+    background-color: #e9ecef;
+}
+
 /* Active source in sidebar */
 .source-item.active {
     background-color: #cfe2ff;
     border-color: #b6d4fe;
+    font-weight: bold;
 }
 
 /* Auto refresh active state */
