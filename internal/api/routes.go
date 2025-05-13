@@ -18,6 +18,8 @@ func SetupRoutes(router *chi.Mux, storage storage.Storage, logger hclog.Logger) 
                 // Log routes
                 r.Route("/logs", func(r chi.Router) {
                         r.Get("/", handlers.GetLogs)
+                        r.Post("/", handlers.StoreLog)
+                        r.Post("/batch", handlers.StoreLogs)
                         r.Get("/sources", handlers.GetSources)
                         r.Get("/stats", handlers.GetStats)
                 })

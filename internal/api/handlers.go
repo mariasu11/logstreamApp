@@ -231,6 +231,8 @@ func (h *Handlers) GetDocs(w http.ResponseWriter, r *http.Request) {
                 "description": "A high-performance log aggregation and analysis API",
                 "endpoints": []map[string]string{
                         {"path": "/api/v1/logs", "method": "GET", "description": "Get log entries"},
+                        {"path": "/api/v1/logs", "method": "POST", "description": "Store a single log entry"},
+                        {"path": "/api/v1/logs/batch", "method": "POST", "description": "Store multiple log entries"},
                         {"path": "/api/v1/logs/sources", "method": "GET", "description": "Get log sources"},
                         {"path": "/api/v1/logs/stats", "method": "GET", "description": "Get storage statistics"},
                         {"path": "/api/v1/query", "method": "POST", "description": "Execute a custom query"},
