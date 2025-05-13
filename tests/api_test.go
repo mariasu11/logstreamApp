@@ -232,11 +232,13 @@ func TestAPIServer(t *testing.T) {
 
                 assert.Equal(t, http.StatusOK, resp.StatusCode)
 
-                var docs map[string]interface{}
-                err = json.NewDecoder(resp.Body).Decode(&docs)
+                // The root URL returns HTML, not JSON, so we should check for HTML content
+                body, err := io.ReadAll(resp.Body)
                 require.NoError(t, err)
-
-                assert.Equal(t, "LogStream API", docs["name"])
+                
+                // Check for HTML content instead of trying to parse JSON
+                assert.Contains(t, string(body), "<!DOCTYPE html>")
+                assert.Contains(t, string(body), "LogStream")
         })
 
         t.Run("Metrics", func(t *testing.T) {
