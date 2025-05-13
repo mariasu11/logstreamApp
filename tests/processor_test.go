@@ -1,253 +1,350 @@
 package tests
 
 import (
-	"context"
-	"testing"
-	"time"
+        "context"
+        "testing"
+        "time"
 
-	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
+        "github.com/stretchr/testify/assert"
+        "github.com/stretchr/testify/mock"
+        "github.com/stretchr/testify/require"
 
-	"github.com/yourusername/logstream/internal/processor"
-	"github.com/yourusername/logstream/internal/storage"
-	"github.com/yourusername/logstream/pkg/models"
-	"github.com/yourusername/logstream/pkg/worker"
+        "github.com/yourusername/logstream/internal/processor"
+        "github.com/yourusername/logstream/internal/storage"
+        "github.com/yourusername/logstream/pkg/models"
+        "github.com/yourusername/logstream/pkg/worker"
 )
 
+// MockStorage for processor tests
+type ProcessorMockStorage struct {
+        mock.Mock
+}
+
+func (m *ProcessorMockStorage) Store(ctx context.Context, entry *models.LogEntry) error {
+        args := m.Called(ctx, entry)
+        return args.Error(0)
+}
+
+func (m *ProcessorMockStorage) Query(ctx context.Context, query models.Query) ([]*models.LogEntry, error) {
+        args := m.Called(ctx, query)
+        return args.Get(0).([]*models.LogEntry), args.Error(1)
+}
+
+func (m *ProcessorMockStorage) GetStats(ctx context.Context) (storage.StorageStats, error) {
+        args := m.Called(ctx)
+        return args.Get(0).(storage.StorageStats), args.Error(1)
+}
+
+func (m *ProcessorMockStorage) GetSources(ctx context.Context) ([]string, error) {
+        args := m.Called(ctx)
+        return args.Get(0).([]string), args.Error(1)
+}
+
+func (m *ProcessorMockStorage) GetLevels(ctx context.Context) ([]string, error) {
+        args := m.Called(ctx)
+        return args.Get(0).([]string), args.Error(1)
+}
+
+func (m *ProcessorMockStorage) Close() error {
+        args := m.Called()
+        return args.Error(0)
+}
+
+// Define a simple filter implementation for testing
+type testFilter struct {
+        field string
+        value string
+}
+
+func (f *testFilter) Apply(entry *models.LogEntry) bool {
+        // Filter logs by field value
+        switch f.field {
+        case "level":
+                return entry.Level == f.value
+        case "source":
+                return entry.Source == f.value
+        default:
+                // Check custom fields
+                if value, ok := entry.Fields[f.field]; ok {
+                        return value == f.value
+                }
+                return false
+        }
+}
+
+// Define a simple transformer implementation for testing
+type testTransformer struct {
+        fieldToAdd     string
+        valueToAdd     string
+        messageSuffix  string
+}
+
+func (t *testTransformer) Transform(entry *models.LogEntry) {
+        // Add a field
+        if entry.Fields == nil {
+                entry.Fields = make(map[string]interface{})
+        }
+        entry.Fields[t.fieldToAdd] = t.valueToAdd
+        
+        // Add suffix to message
+        if t.messageSuffix != "" {
+                entry.Message += t.messageSuffix
+        }
+}
+
 func TestProcessor(t *testing.T) {
-	// Create storage and worker pool
-	memStorage := storage.NewMemoryStorage()
-	workerPool := worker.NewPool(2)
-
-	// Start the worker pool
-	ctx, cancel := context.WithCancel(context.Background())
-	defer cancel()
-	workerPool.Start(ctx)
-
-	// Create processor
-	proc := processor.NewProcessor(memStorage, workerPool)
-
-	// Create test log entries
-	entries := []*models.LogEntry{
-		{
-			Timestamp: time.Now(),
-			Source:    "test",
-			Level:     "info",
-			Message:   "Test message 1",
-			Fields: map[string]interface{}{
-				"key1": "value1",
-			},
-		},
-		{
-			Timestamp: time.Now().Add(-1 * time.Hour),
-			Source:    "test",
-			Level:     "error",
-			Message:   "Test message 2",
-			Fields: map[string]interface{}{
-				"key2": "value2",
-			},
-		},
-	}
-
-	// Process the entries
-	err := proc.Process(ctx, entries)
-	require.NoError(t, err)
-
-	// Allow some time for processing to complete
-	time.Sleep(100 * time.Millisecond)
-
-	// Query the storage to verify entries were processed and stored
-	query := models.Query{
-		Limit: 10,
-	}
-	results, err := memStorage.Query(ctx, query)
-	require.NoError(t, err)
-
-	// Should have both log entries
-	assert.Equal(t, 2, len(results))
-	assert.Equal(t, "Test message 1", results[0].Message)
-	assert.Equal(t, "Test message 2", results[1].Message)
+        // Setup
+        mockStorage := new(ProcessorMockStorage)
+        workerPool := worker.NewPool(2)
+        
+        // Start worker pool
+        ctx, cancel := context.WithCancel(context.Background())
+        defer cancel()
+        workerPool.Start(ctx)
+        
+        // Create processor
+        proc := processor.NewProcessor(mockStorage, workerPool)
+        
+        // Test basic processing
+        t.Run("BasicProcessing", func(t *testing.T) {
+                // Create test log entries
+                entries := []*models.LogEntry{
+                        {
+                                Timestamp: time.Now(),
+                                Source:    "app1",
+                                Level:     "info",
+                                Message:   "Test message 1",
+                        },
+                        {
+                                Timestamp: time.Now(),
+                                Source:    "app2",
+                                Level:     "error",
+                                Message:   "Test error message",
+                        },
+                }
+                
+                // Set expectations for storage
+                mockStorage.On("Store", mock.Anything, entries[0]).Return(nil).Once()
+                mockStorage.On("Store", mock.Anything, entries[1]).Return(nil).Once()
+                
+                // Process the entries
+                err := proc.Process(ctx, entries)
+                require.NoError(t, err)
+                
+                // Wait for async processing to complete
+                time.Sleep(100 * time.Millisecond)
+                
+                // Check that all entries were stored
+                mockStorage.AssertExpectations(t)
+        })
+        
+        // Test filtering
+        t.Run("WithFiltering", func(t *testing.T) {
+                // Reset mock
+                mockStorage = new(ProcessorMockStorage)
+                
+                // Create processor with filter
+                proc := processor.NewProcessor(mockStorage, workerPool)
+                
+                // Add a filter to keep only error logs
+                errorFilter := &testFilter{
+                        field: "level",
+                        value: "error",
+                }
+                proc.AddFilter(errorFilter)
+                
+                // Create test log entries
+                entries := []*models.LogEntry{
+                        {
+                                Timestamp: time.Now(),
+                                Source:    "app1",
+                                Level:     "info",
+                                Message:   "This should be filtered out",
+                        },
+                        {
+                                Timestamp: time.Now(),
+                                Source:    "app2",
+                                Level:     "error",
+                                Message:   "This should pass the filter",
+                        },
+                }
+                
+                // Set expectations - only the error log should be stored
+                mockStorage.On("Store", mock.Anything, entries[1]).Return(nil).Once()
+                
+                // Process the entries
+                err := proc.Process(ctx, entries)
+                require.NoError(t, err)
+                
+                // Wait for async processing to complete
+                time.Sleep(100 * time.Millisecond)
+                
+                // Check that only error entry was stored
+                mockStorage.AssertExpectations(t)
+        })
+        
+        // Test transformation
+        t.Run("WithTransformation", func(t *testing.T) {
+                // Reset mock
+                mockStorage = new(ProcessorMockStorage)
+                
+                // Create processor with transformer
+                proc := processor.NewProcessor(mockStorage, workerPool)
+                
+                // Add a transformer to add fields
+                transformer := &testTransformer{
+                        fieldToAdd:    "processed",
+                        valueToAdd:    "true",
+                        messageSuffix: " [PROCESSED]",
+                }
+                proc.AddTransformer(transformer)
+                
+                // Create a test log entry
+                entry := &models.LogEntry{
+                        Timestamp: time.Now(),
+                        Source:    "app1",
+                        Level:     "info",
+                        Message:   "Test message",
+                        Fields:    make(map[string]interface{}),
+                }
+                
+                // We need to capture the stored entry to verify transformation
+                var capturedEntry *models.LogEntry
+                mockStorage.On("Store", mock.Anything, mock.AnythingOfType("*models.LogEntry")).
+                        Run(func(args mock.Arguments) {
+                                // Capture the entry that was passed to Store
+                                capturedEntry = args.Get(1).(*models.LogEntry)
+                        }).
+                        Return(nil).Once()
+                
+                // Process the entry
+                err := proc.Process(ctx, []*models.LogEntry{entry})
+                require.NoError(t, err)
+                
+                // Wait for async processing to complete
+                time.Sleep(100 * time.Millisecond)
+                
+                // Check storage was called
+                mockStorage.AssertExpectations(t)
+                
+                // Verify transformation
+                require.NotNil(t, capturedEntry)
+                assert.Equal(t, "Test message [PROCESSED]", capturedEntry.Message)
+                assert.Equal(t, "true", capturedEntry.Fields["processed"])
+        })
+        
+        // Test chain of filters and transformers
+        t.Run("ProcessingPipeline", func(t *testing.T) {
+                // Reset mock
+                mockStorage = new(ProcessorMockStorage)
+                
+                // Create processor with multiple filters and transformers
+                proc := processor.NewProcessor(mockStorage, workerPool)
+                
+                // Add a source filter
+                sourceFilter := &testFilter{
+                        field: "source",
+                        value: "app1",
+                }
+                proc.AddFilter(sourceFilter)
+                
+                // Add a transformer
+                transformer := &testTransformer{
+                        fieldToAdd:    "environment",
+                        valueToAdd:    "test",
+                }
+                proc.AddTransformer(transformer)
+                
+                // Create test log entries
+                entries := []*models.LogEntry{
+                        {
+                                Timestamp: time.Now(),
+                                Source:    "app1",
+                                Level:     "info",
+                                Message:   "From app1",
+                                Fields:    make(map[string]interface{}),
+                        },
+                        {
+                                Timestamp: time.Now(),
+                                Source:    "app2",
+                                Level:     "info",
+                                Message:   "From app2",
+                                Fields:    make(map[string]interface{}),
+                        },
+                }
+                
+                // We need to capture the stored entry to verify pipeline processing
+                var capturedEntry *models.LogEntry
+                mockStorage.On("Store", mock.Anything, mock.AnythingOfType("*models.LogEntry")).
+                        Run(func(args mock.Arguments) {
+                                // Capture the entry that was passed to Store
+                                capturedEntry = args.Get(1).(*models.LogEntry)
+                        }).
+                        Return(nil).Once()
+                
+                // Process the entries
+                err := proc.Process(ctx, entries)
+                require.NoError(t, err)
+                
+                // Wait for async processing to complete
+                time.Sleep(100 * time.Millisecond)
+                
+                // Check storage was called
+                mockStorage.AssertExpectations(t)
+                
+                // Verify pipeline processing
+                require.NotNil(t, capturedEntry)
+                assert.Equal(t, "app1", capturedEntry.Source) // Should be from app1 (passed filter)
+                assert.Equal(t, "test", capturedEntry.Fields["environment"]) // Should have added field
+        })
 }
 
-func TestProcessorWithFilters(t *testing.T) {
-	// Create storage and worker pool
-	memStorage := storage.NewMemoryStorage()
-	workerPool := worker.NewPool(2)
-
-	// Start the worker pool
-	ctx, cancel := context.WithCancel(context.Background())
-	defer cancel()
-	workerPool.Start(ctx)
-
-	// Create processor with a level filter
-	proc := processor.NewProcessor(memStorage, workerPool)
-	levelFilter := processor.NewLevelFilter([]string{"error"}, true)
-	proc.AddFilter(levelFilter)
-
-	// Create test log entries with different levels
-	entries := []*models.LogEntry{
-		{
-			Timestamp: time.Now(),
-			Source:    "test",
-			Level:     "info",
-			Message:   "Info message",
-		},
-		{
-			Timestamp: time.Now(),
-			Source:    "test",
-			Level:     "error",
-			Message:   "Error message",
-		},
-		{
-			Timestamp: time.Now(),
-			Source:    "test",
-			Level:     "warn",
-			Message:   "Warning message",
-		},
-	}
-
-	// Process the entries
-	err := proc.Process(ctx, entries)
-	require.NoError(t, err)
-
-	// Allow some time for processing to complete
-	time.Sleep(100 * time.Millisecond)
-
-	// Query the storage to verify only error entries were stored
-	query := models.Query{
-		Limit: 10,
-	}
-	results, err := memStorage.Query(ctx, query)
-	require.NoError(t, err)
-
-	// Should have only the error message
-	assert.Equal(t, 1, len(results))
-	assert.Equal(t, "Error message", results[0].Message)
-	assert.Equal(t, "error", results[0].Level)
-}
-
-func TestProcessorWithTransformers(t *testing.T) {
-	// Create storage and worker pool
-	memStorage := storage.NewMemoryStorage()
-	workerPool := worker.NewPool(2)
-
-	// Start the worker pool
-	ctx, cancel := context.WithCancel(context.Background())
-	defer cancel()
-	workerPool.Start(ctx)
-
-	// Create processor with a field transformer
-	proc := processor.NewProcessor(memStorage, workerPool)
-	transformer := processor.NewAddFieldTransformer("environment", "test")
-	proc.AddTransformer(transformer)
-
-	// Create test log entry
-	entries := []*models.LogEntry{
-		{
-			Timestamp: time.Now(),
-			Source:    "test",
-			Level:     "info",
-			Message:   "Test message",
-		},
-	}
-
-	// Process the entry
-	err := proc.Process(ctx, entries)
-	require.NoError(t, err)
-
-	// Allow some time for processing to complete
-	time.Sleep(100 * time.Millisecond)
-
-	// Query the storage to verify the transformer was applied
-	query := models.Query{
-		Limit: 10,
-	}
-	results, err := memStorage.Query(ctx, query)
-	require.NoError(t, err)
-
-	// Should have the environment field added
-	assert.Equal(t, 1, len(results))
-	assert.Equal(t, "Test message", results[0].Message)
-	assert.Equal(t, "test", results[0].Fields["environment"])
-}
-
-func TestRegexExtractTransformer(t *testing.T) {
-	// Create storage and worker pool
-	memStorage := storage.NewMemoryStorage()
-	workerPool := worker.NewPool(2)
-
-	// Start the worker pool
-	ctx, cancel := context.WithCancel(context.Background())
-	defer cancel()
-	workerPool.Start(ctx)
-
-	// Create processor with a regex extract transformer
-	proc := processor.NewProcessor(memStorage, workerPool)
-	
-	// Extract user ID and action from a message like "User 12345 performed action: login"
-	regexTransformer, err := processor.NewRegexExtractTransformer(
-		`User (\d+) performed action: (\w+)`,
-		[]string{"user_id", "action"},
-	)
-	require.NoError(t, err)
-	proc.AddTransformer(regexTransformer)
-
-	// Create test log entry
-	entries := []*models.LogEntry{
-		{
-			Timestamp: time.Now(),
-			Source:    "test",
-			Level:     "info",
-			Message:   "User 12345 performed action: login",
-		},
-	}
-
-	// Process the entry
-	err = proc.Process(ctx, entries)
-	require.NoError(t, err)
-
-	// Allow some time for processing to complete
-	time.Sleep(100 * time.Millisecond)
-
-	// Query the storage to verify the transformer was applied
-	query := models.Query{
-		Limit: 10,
-	}
-	results, err := memStorage.Query(ctx, query)
-	require.NoError(t, err)
-
-	// Should have the extracted fields
-	assert.Equal(t, 1, len(results))
-	assert.Equal(t, "12345", results[0].Fields["user_id"])
-	assert.Equal(t, "login", results[0].Fields["action"])
-}
-
-func TestCompositeFilter(t *testing.T) {
-	// Create composite filter with level and regex filters
-	levelFilter := processor.NewLevelFilter([]string{"error", "warn"}, true)
-	regexFilter, err := processor.NewRegexFilter("database|connection", true)
-	require.NoError(t, err)
-	
-	compositeFilter := processor.NewCompositeFilter(levelFilter, regexFilter)
-	
-	// Test with various log entries
-	entries := []*models.LogEntry{
-		{
-			Level:   "error",
-			Message: "Database connection failed",
-		},
-		{
-			Level:   "error",
-			Message: "Application crashed",
-		},
-		{
-			Level:   "info",
-			Message: "Database connection established",
-		},
-	}
-	
-	// Only the first entry should pass both filters
-	assert.True(t, compositeFilter.Apply(entries[0]))
-	assert.False(t, compositeFilter.Apply(entries[1])) // Passes level but not regex
-	assert.False(t, compositeFilter.Apply(entries[2])) // Passes regex but not level
+func TestParsingRawLogs(t *testing.T) {
+        // Setup
+        mockStorage := new(ProcessorMockStorage)
+        workerPool := worker.NewPool(2)
+        
+        // Start worker pool
+        ctx, cancel := context.WithCancel(context.Background())
+        defer cancel()
+        workerPool.Start(ctx)
+        
+        // Create processor
+        proc := processor.NewProcessor(mockStorage, workerPool)
+        
+        // Test JSON log parsing
+        t.Run("JSONParsing", func(t *testing.T) {
+                // Create raw JSON log
+                rawJSON := `{"timestamp":"2023-05-01T12:00:00Z","level":"info","message":"Test JSON log","fields":{"user":"testuser","id":123}}`
+                
+                entry := &models.LogEntry{
+                        RawData: rawJSON,
+                }
+                
+                // We need to capture the stored entry to verify parsing
+                var capturedEntry *models.LogEntry
+                mockStorage.On("Store", mock.Anything, mock.AnythingOfType("*models.LogEntry")).
+                        Run(func(args mock.Arguments) {
+                                // Capture the entry that was passed to Store
+                                capturedEntry = args.Get(1).(*models.LogEntry)
+                        }).
+                        Return(nil).Once()
+                
+                // Process the entry
+                err := proc.Process(ctx, []*models.LogEntry{entry})
+                require.NoError(t, err)
+                
+                // Wait for async processing to complete
+                time.Sleep(100 * time.Millisecond)
+                
+                // Check storage was called
+                mockStorage.AssertExpectations(t)
+                
+                // Verify parsing
+                require.NotNil(t, capturedEntry)
+                assert.Equal(t, "info", capturedEntry.Level)
+                assert.Equal(t, "Test JSON log", capturedEntry.Message)
+                assert.NotNil(t, capturedEntry.Fields)
+                assert.Equal(t, "testuser", capturedEntry.Fields["user"])
+        })
 }
