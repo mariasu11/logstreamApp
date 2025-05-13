@@ -304,20 +304,7 @@ func (e *Engine) calculateCorrelation(entries []*models.LogEntry, fields []strin
                                 
                                 var value2 string
                                 
-                                // Get value for field2 - we only need this one
-                                switch strings.ToLower(field2) {
-                                case "source":
-                                        value2 = entry.Source
-                                case "level":
-                                        value2 = entry.Level
-                                default:
-                                        if fieldValue, ok := entry.Fields[field2]; ok {
-                                                value2 = fmt.Sprintf("%v", fieldValue)
-                                        } else {
-                                                value2 = "unknown"
-                                        }
-                                }
-                                
+                                // Get value for field2
                                 switch strings.ToLower(field2) {
                                 case "source":
                                         value2 = entry.Source
@@ -340,7 +327,9 @@ func (e *Engine) calculateCorrelation(entries []*models.LogEntry, fields []strin
         return correlation
 }
 
+// Note: Using lint directives to mark intentionally unused code for future implementation
 // Helper function to parse time
+// nolint:unused,deadcode
 func parseTime(timeStr string) models.Timestamp {
         // A real implementation would include more sophisticated time parsing
         return models.Timestamp{}

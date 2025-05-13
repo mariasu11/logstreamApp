@@ -4,7 +4,7 @@ import (
         "bytes"
         "context"
         "encoding/json"
-        "io/ioutil"
+        "io"
         "net/http"
         "net/http/httptest"
         "testing"
@@ -22,7 +22,7 @@ import (
 func TestAPIServer(t *testing.T) {
         // Create a logger that discards output
         logger := hclog.New(&hclog.LoggerOptions{
-                Output: ioutil.Discard,
+                Output: io.Discard,
                 Level:  hclog.Debug,
         })
 

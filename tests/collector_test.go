@@ -3,7 +3,7 @@ package tests
 import (
         "context"
         "fmt"
-        "io/ioutil"
+        "io"
         "net/http"
         "net/http/httptest"
         "os"
