@@ -34,6 +34,14 @@ func NewCollector(sourceURI string, processor processor.Processor) (Collector, e
                 if path == "" {
                         path = uri.Host // Handle file://test.log format
                 }
+                
+                // Handle fixtures directory specifically
+                if strings.Contains(path, "fixtures/") {
+                        // Ensure we use the correct path
+                        return NewFileCollector(path, processor)
+                }
+                
+                // For backward compatibility with existing code
                 return NewFileCollector(path, processor)
         case "http", "https":
                 return NewHTTPCollector(sourceURI, processor)
