@@ -5,6 +5,7 @@ import (
         "net/http"
         "os"
         "path/filepath"
+        "strings"
 
         "github.com/go-chi/chi/v5"
         "github.com/hashicorp/go-hclog"
@@ -34,9 +35,22 @@ func (h *WebHandler) RegisterRoutes(r chi.Router) {
                 return
         }
 
-        // Setup static file serving
-        fs := http.FileServer(http.Dir(h.staticPath))
-        r.Handle("/static/*", http.StripPrefix("/static/", fs))
+        // Setup static file serving with proper MIME types
+        fileServer := http.FileServer(http.Dir(h.staticPath))
+        r.HandleFunc("/static/*", func(w http.ResponseWriter, r *http.Request) {
+                // Set correct content types based on file extension
+                path := r.URL.Path
+                if strings.HasSuffix(path, ".css") {
+                        w.Header().Set("Content-Type", "text/css")
+                } else if strings.HasSuffix(path, ".js") {
+                        w.Header().Set("Content-Type", "application/javascript")
+                } else if strings.HasSuffix(path, ".html") {
+                        w.Header().Set("Content-Type", "text/html")
+                }
+                
+                // Serve the file
+                http.StripPrefix("/static/", fileServer).ServeHTTP(w, r)
+        })
 
         // Setup page routes
         r.Get("/", h.handleIndex)
@@ -93,6 +107,9 @@ func (h *WebHandler) handleIndex(w http.ResponseWriter, r *http.Request) {
                 http.Error(w, "Templates not loaded", http.StatusInternalServerError)
                 return
         }
+        
+        // Set content type header
+        w.Header().Set("Content-Type", "text/html; charset=utf-8")
         
         err := h.templates.ExecuteTemplate(w, "index.html", nil)
         if err != nil {
