@@ -163,7 +163,8 @@ func (h *Handlers) GetStats(w http.ResponseWriter, r *http.Request) {
 func (h *Handlers) ExecuteQuery(w http.ResponseWriter, r *http.Request) {
         // Parse request body
         var queryRequest struct {
-                Query models.Query `json:"query"`
+                Filter string `json:"filter"`
+                Limit  int    `json:"limit"`
         }
 
         if err := json.NewDecoder(r.Body).Decode(&queryRequest); err != nil {
@@ -171,8 +172,17 @@ func (h *Handlers) ExecuteQuery(w http.ResponseWriter, r *http.Request) {
                 return
         }
 
+        // Build query
+        query := models.NewQuery()
+        if queryRequest.Filter != "" {
+                query = query.WithFilter(queryRequest.Filter)
+        }
+        if queryRequest.Limit > 0 {
+                query = query.WithLimit(queryRequest.Limit)
+        }
+
         // Execute query
-        results, err := h.queryEngine.Execute(queryRequest.Query)
+        results, err := h.storage.Query(r.Context(), query)
         if err != nil {
                 h.respondWithError(w, http.StatusInternalServerError, "Query failed: "+err.Error())
                 return
