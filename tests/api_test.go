@@ -244,7 +244,7 @@ func TestAPIServer(t *testing.T) {
                 defer resp.Body.Close()
 
                 assert.Equal(t, http.StatusOK, resp.StatusCode)
-                body, err := ioutil.ReadAll(resp.Body)
+                body, err := io.ReadAll(resp.Body)
                 require.NoError(t, err)
 
                 // Prometheus metrics format contains metric names

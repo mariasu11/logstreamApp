@@ -150,12 +150,12 @@ func TestCollectorFactory(t *testing.T) {
         }
 
         // Test file collector creation
-        tmpDir, err := ioutil.TempDir("", "logstream-test")
+        tmpDir, err := os.MkdirTemp("", "logstream-test")
         require.NoError(t, err)
         defer os.RemoveAll(tmpDir)
 
         logFile := filepath.Join(tmpDir, "test.log")
-        err = ioutil.WriteFile(logFile, []byte("test log entry\n"), 0644)
+        err = os.WriteFile(logFile, []byte("test log entry\n"), 0644)
         require.NoError(t, err)
 
         fileURI := "file://" + logFile
@@ -188,7 +188,7 @@ func TestCollectorConcurrency(t *testing.T) {
         workerPool.Start(ctx)
 
         // Create a temporary log directory with multiple files
-        tmpDir, err := ioutil.TempDir("", "logstream-test")
+        tmpDir, err := os.MkdirTemp("", "logstream-test")
         require.NoError(t, err)
         defer os.RemoveAll(tmpDir)
 
@@ -196,7 +196,7 @@ func TestCollectorConcurrency(t *testing.T) {
         for i := 0; i < 3; i++ {
                 logFile := filepath.Join(tmpDir, fmt.Sprintf("test%d.log", i))
                 content := fmt.Sprintf("log file %d line 1\nlog file %d line 2\n", i, i)
-                err = ioutil.WriteFile(logFile, []byte(content), 0644)
+                err = os.WriteFile(logFile, []byte(content), 0644)
                 require.NoError(t, err)
         }
 
