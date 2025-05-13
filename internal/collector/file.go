@@ -63,9 +63,12 @@ func (fc *FileCollector) Start(ctx context.Context) error {
         }
         defer file.Close()
 
-        // Seek to the end for new files
-        if _, err := file.Seek(0, 2); err != nil {
-                return fmt.Errorf("failed to seek to end of file %s: %w", fc.filePath, err)
+        // When we're starting collection, start from the beginning of the file
+        // to load all existing logs. On a production system with large files,
+        // we might want to seek to the end, but for demo purposes, let's read everything.
+        // Seek to the beginning of the file
+        if _, err := file.Seek(0, 0); err != nil {
+                return fmt.Errorf("failed to seek to beginning of file %s: %w", fc.filePath, err)
         }
 
         // Watch for new content

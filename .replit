@@ -95,7 +95,7 @@ author = "agent"
 
 [[workflows.workflow.tasks]]
 task = "shell.exec"
-args = "go build -o logstream ./cmd/logstream && ./logstream collect --sources=file://test_logs/test.log"
+args = "go build -o logstream ./cmd/logstream && ./logstream collect --sources=file://./test_logs/test.log"
 
 [deployment]
 run = ["sh", "-c", "go run cmd/logstream/root.go cmd/logstream/main.go cmd/logstream/serve.go --help"]
