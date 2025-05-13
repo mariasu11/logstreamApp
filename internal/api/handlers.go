@@ -29,6 +29,56 @@ func NewHandlers(storage storage.Storage, logger hclog.Logger) *Handlers {
         }
 }
 
+// StoreLog stores a log entry
+func (h *Handlers) StoreLog(w http.ResponseWriter, r *http.Request) {
+        // Parse log entry from request body
+        var entry models.LogEntry
+        if err := json.NewDecoder(r.Body).Decode(&entry); err != nil {
+                h.respondWithError(w, http.StatusBadRequest, "Invalid log entry: "+err.Error())
+                return
+        }
+
+        // Set timestamp if not provided
+        if entry.Timestamp.IsZero() {
+                entry.Timestamp = time.Now()
+        }
+
+        // Store the log entry
+        if err := h.storage.Store(r.Context(), &entry); err != nil {
+                h.respondWithError(w, http.StatusInternalServerError, "Failed to store log entry: "+err.Error())
+                return
+        }
+
+        h.respondWithJSON(w, http.StatusCreated, map[string]string{"status": "ok"})
+}
+
+// StoreLogs stores multiple log entries
+func (h *Handlers) StoreLogs(w http.ResponseWriter, r *http.Request) {
+        // Parse log entries from request body
+        var entries []*models.LogEntry
+        if err := json.NewDecoder(r.Body).Decode(&entries); err != nil {
+                h.respondWithError(w, http.StatusBadRequest, "Invalid log entries: "+err.Error())
+                return
+        }
+
+        // Set timestamp for any entries without one
+        for _, entry := range entries {
+                if entry.Timestamp.IsZero() {
+                        entry.Timestamp = time.Now()
+                }
+        }
+
+        // Store all log entries
+        for _, entry := range entries {
+                if err := h.storage.Store(r.Context(), entry); err != nil {
+                        h.respondWithError(w, http.StatusInternalServerError, "Failed to store log entries: "+err.Error())
+                        return
+                }
+        }
+
+        h.respondWithJSON(w, http.StatusCreated, map[string]string{"status": "ok", "count": strconv.Itoa(len(entries))})
+}
+
 // GetLogs returns log entries
 func (h *Handlers) GetLogs(w http.ResponseWriter, r *http.Request) {
         // Parse query parameters
