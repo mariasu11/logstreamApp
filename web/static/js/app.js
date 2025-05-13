@@ -500,31 +500,42 @@ function updateCharts(logs) {
         
         // Prepare data for volume chart (logs by time)
         const timeGroups = {};
+        const timeMap = new Map(); // Map to store ISO timestamps for accurate sorting
+        
         logs.forEach(log => {
             // Group by hour
             const timestamp = new Date(log.timestamp);
-            const hourFormat = timestamp.toLocaleString(undefined, {
+            
+            // Create a date-only string with zero time for grouping by hour
+            const hourTimestamp = new Date(
+                timestamp.getFullYear(),
+                timestamp.getMonth(),
+                timestamp.getDate(),
+                timestamp.getHours()
+            );
+            
+            // Format for display
+            const hourFormat = hourTimestamp.toLocaleString(undefined, {
                 year: 'numeric',
                 month: 'numeric',
                 day: 'numeric',
                 hour: 'numeric'
             });
             
+            // Store the original hour timestamp for sorting
+            timeMap.set(hourFormat, hourTimestamp);
+            
+            // Count logs per hour
             timeGroups[hourFormat] = (timeGroups[hourFormat] || 0) + 1;
         });
         
         // Get time keys
         const timeKeys = Object.keys(timeGroups);
         
-        // Parse dates for proper sorting
-        const dateMap = new Map();
-        timeKeys.forEach(key => {
-            dateMap.set(key, new Date(key));
-        });
-        
         // Sort by time (oldest to newest)
         const sortedTimes = timeKeys.sort((a, b) => {
-            return dateMap.get(a) - dateMap.get(b);
+            // Use original timestamps for sorting
+            return timeMap.get(a) - timeMap.get(b);
         });
         
         console.log("Time data points (oldest to newest):", sortedTimes);
