@@ -130,6 +130,10 @@ func (h *Handlers) GetLogs(w http.ResponseWriter, r *http.Request) {
                 "sources", sources, 
                 "levels", levels, 
                 "filter", filter)
+                
+        // Extra debugging to check if there are logs in the system
+        allLogs, _ := h.storage.Query(r.Context(), models.NewQuery())
+        h.logger.Debug("Total logs in storage", "count", len(allLogs))
 
         // Build query
         qb := storage.NewQueryBuilder().
