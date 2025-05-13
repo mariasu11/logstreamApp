@@ -1,7 +1,7 @@
 package plugin
 
 import (
-	"github.com/yourusername/logstream/pkg/models"
+	"github.com/mariasu11/logstream/pkg/models"
 )
 
 // Plugin defines the interface for LogStream plugins

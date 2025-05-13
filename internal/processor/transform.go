@@ -6,7 +6,7 @@ import (
         "strings"
         "time"
 
-        "github.com/yourusername/logstream/pkg/models"
+        "github.com/mariasu11/logstream/pkg/models"
 )
 
 // Transformer defines the interface for transforming log entries

@@ -9,8 +9,8 @@ import (
         "github.com/stretchr/testify/require"
         "github.com/hashicorp/go-hclog"
 
-        "github.com/yourusername/logstream/pkg/models"
-        "github.com/yourusername/logstream/pkg/plugin"
+        "github.com/mariasu11/logstream/pkg/models"
+        "github.com/mariasu11/logstream/pkg/plugin"
 )
 
 // MockPlugin is a test implementation of the Plugin interface

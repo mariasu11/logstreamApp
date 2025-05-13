@@ -6,7 +6,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/yourusername/logstream/pkg/models"
+	"github.com/mariasu11/logstream/pkg/models"
 )
 
 // RegexParser is a parser that uses regular expressions to parse log entries

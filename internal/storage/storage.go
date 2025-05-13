@@ -4,7 +4,7 @@ import (
 	"context"
 	"time"
 
-	"github.com/yourusername/logstream/pkg/models"
+	"github.com/mariasu11/logstream/pkg/models"
 )
 
 // Storage defines the interface for log storage backends

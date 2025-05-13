@@ -5,7 +5,7 @@ import (
         "github.com/hashicorp/go-hclog"
         "github.com/prometheus/client_golang/prometheus/promhttp"
         
-        "github.com/yourusername/logstream/internal/storage"
+        "github.com/mariasu11/logstream/internal/storage"
 )
 
 // SetupRoutes configures the routes for the chi router

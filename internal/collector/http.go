@@ -9,8 +9,8 @@ import (
         "strings"
         "time"
 
-        "github.com/yourusername/logstream/internal/processor"
-        "github.com/yourusername/logstream/pkg/models"
+        "github.com/mariasu11/logstream/internal/processor"
+        "github.com/mariasu11/logstream/pkg/models"
 )
 
 // HTTPCollector collects logs from HTTP endpoints

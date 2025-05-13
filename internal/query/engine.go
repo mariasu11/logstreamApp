@@ -6,7 +6,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/yourusername/logstream/pkg/models"
+	"github.com/mariasu11/logstream/pkg/models"
 )
 
 // LogQueryLanguage (LQL) parser for advanced query syntax

@@ -5,7 +5,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/yourusername/logstream/pkg/models"
+	"github.com/mariasu11/logstream/pkg/models"
 )
 
 // Filter defines the interface for filtering log entries

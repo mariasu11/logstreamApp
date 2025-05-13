@@ -9,10 +9,10 @@ import (
         "github.com/stretchr/testify/mock"
         "github.com/stretchr/testify/require"
 
-        "github.com/yourusername/logstream/internal/processor"
-        "github.com/yourusername/logstream/internal/storage"
-        "github.com/yourusername/logstream/pkg/models"
-        "github.com/yourusername/logstream/pkg/worker"
+        "github.com/mariasu11/logstream/internal/processor"
+        "github.com/mariasu11/logstream/internal/storage"
+        "github.com/mariasu11/logstream/pkg/models"
+        "github.com/mariasu11/logstream/pkg/worker"
 )
 
 // MockStorage for processor tests

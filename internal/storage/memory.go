@@ -8,7 +8,7 @@ import (
         "sync"
         "time"
 
-        "github.com/yourusername/logstream/pkg/models"
+        "github.com/mariasu11/logstream/pkg/models"
 )
 
 // MemoryStorage implements in-memory storage for log entries

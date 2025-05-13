@@ -8,7 +8,7 @@ import (
 	"github.com/hashicorp/go-hclog"
 	"github.com/prometheus/client_golang/prometheus"
 
-	"github.com/yourusername/logstream/internal/metrics"
+	"github.com/mariasu11/logstream/internal/metrics"
 )
 
 // LoggerMiddleware creates a custom middleware that logs requests using go-hclog

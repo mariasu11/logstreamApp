@@ -12,7 +12,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/yourusername/logstream/pkg/models"
+	"github.com/mariasu11/logstream/pkg/models"
 )
 
 // DiskStorage implements disk-based storage for log entries

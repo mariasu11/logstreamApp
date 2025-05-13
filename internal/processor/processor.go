@@ -5,12 +5,12 @@ import (
         "fmt"
         "sync"
 
-        "github.com/yourusername/logstream/internal/metrics"
-        "github.com/yourusername/logstream/internal/storage"
-        "github.com/yourusername/logstream/pkg/models"
-        "github.com/yourusername/logstream/pkg/parser"
-        "github.com/yourusername/logstream/pkg/plugin"
-        "github.com/yourusername/logstream/pkg/worker"
+        "github.com/mariasu11/logstream/internal/metrics"
+        "github.com/mariasu11/logstream/internal/storage"
+        "github.com/mariasu11/logstream/pkg/models"
+        "github.com/mariasu11/logstream/pkg/parser"
+        "github.com/mariasu11/logstream/pkg/plugin"
+        "github.com/mariasu11/logstream/pkg/worker"
 )
 
 // Processor interface defines the methods for processing log entries

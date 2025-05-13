@@ -14,9 +14,9 @@ import (
         "github.com/stretchr/testify/require"
         "github.com/hashicorp/go-hclog"
 
-        "github.com/yourusername/logstream/internal/api"
-        "github.com/yourusername/logstream/internal/storage"
-        "github.com/yourusername/logstream/pkg/models"
+        "github.com/mariasu11/logstream/internal/api"
+        "github.com/mariasu11/logstream/internal/storage"
+        "github.com/mariasu11/logstream/pkg/models"
 )
 
 func TestAPIServer(t *testing.T) {

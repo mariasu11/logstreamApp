@@ -5,7 +5,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/yourusername/logstream/internal/metrics"
+	"github.com/mariasu11/logstream/internal/metrics"
 )
 
 // Pool represents a worker pool that processes jobs concurrently

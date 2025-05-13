@@ -9,9 +9,9 @@ import (
 
         "github.com/hashicorp/go-hclog"
 
-        "github.com/yourusername/logstream/internal/query"
-        "github.com/yourusername/logstream/internal/storage"
-        "github.com/yourusername/logstream/pkg/models"
+        "github.com/mariasu11/logstream/internal/query"
+        "github.com/mariasu11/logstream/internal/storage"
+        "github.com/mariasu11/logstream/pkg/models"
 )
 
 // Handlers contains the HTTP handlers for the API
