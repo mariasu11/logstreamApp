@@ -1,0 +1,165 @@
+13s
+Run go test -v ./tests/...
+go: downloading github.com/stretchr/testify v1.10.0
+go: downloading github.com/pmezard/go-difflib v1.0.0
+go: downloading github.com/davecgh/go-spew v1.1.1
+go: downloading github.com/stretchr/objx v0.5.2
+=== RUN   TestAPIServer
+=== RUN   TestAPIServer/GetLogs
+=== RUN   TestAPIServer/GetLogs_WithFilter
+=== RUN   TestAPIServer/GetSources
+=== RUN   TestAPIServer/GetStats
+=== RUN   TestAPIServer/ExecuteQuery
+    api_test.go:174: 
+        	Error Trace:	/home/runner/work/logstreamApp/logstreamApp/tests/api_test.go:174
+        	Error:      	Not equal: 
+        	            	expected: 2
+        	            	actual  : 3
+        	Test:       	TestAPIServer/ExecuteQuery
+    api_test.go:176: 
+        	Error Trace:	/home/runner/work/logstreamApp/logstreamApp/tests/api_test.go:176
+        	Error:      	Not equal: 
+        	            	expected: "info"
+        	            	actual  : "error"
+        	            	
+        	            	Diff:
+        	            	--- Expected
+        	            	+++ Actual
+        	            	@@ -1 +1 @@
+        	            	-info
+        	            	+error
+        	Test:       	TestAPIServer/ExecuteQuery
+=== RUN   TestAPIServer/AnalyzeLogs
+=== RUN   TestAPIServer/HealthCheck
+=== RUN   TestAPIServer/GetDocs
+    api_test.go:232: 
+        	Error Trace:	/home/runner/work/logstreamApp/logstreamApp/tests/api_test.go:232
+        	Error:      	Not equal: 
+        	            	expected: 200
+        	            	actual  : 404
+        	Test:       	TestAPIServer/GetDocs
+    api_test.go:236: 
+        	Error Trace:	/home/runner/work/logstreamApp/logstreamApp/tests/api_test.go:236
+        	Error:      	Received unexpected error:
+        	            	json: cannot unmarshal number into Go value of type map[string]interface {}
+        	Test:       	TestAPIServer/GetDocs
+=== RUN   TestAPIServer/Metrics
+--- FAIL: TestAPIServer (0.01s)
+    --- PASS: TestAPIServer/GetLogs (0.00s)
+    --- PASS: TestAPIServer/GetLogs_WithFilter (0.00s)
+    --- PASS: TestAPIServer/GetSources (0.00s)
+    --- PASS: TestAPIServer/GetStats (0.00s)
+    --- FAIL: TestAPIServer/ExecuteQuery (0.00s)
+    --- PASS: TestAPIServer/AnalyzeLogs (0.00s)
+    --- PASS: TestAPIServer/HealthCheck (0.00s)
+    --- FAIL: TestAPIServer/GetDocs (0.00s)
+    --- PASS: TestAPIServer/Metrics (0.00s)
+=== RUN   TestFileCollector
+DEBUG: Attempting to access file at path: /tmp/logstream-test85450795/test.log
+DEBUG: Processing log line: test log entry 1
+DEBUG: Processing log line: test log entry 2
+DEBUG: Processing log line: test log entry 3
+    collector_test.go:88: Collected 3 entries
+    collector_test.go:90: Entry 0: test log entry 1
+    collector_test.go:90: Entry 1: test log entry 2
+    collector_test.go:90: Entry 2: test log entry 3
+--- PASS: TestFileCollector (2.00s)
+=== RUN   TestHTTPCollector
+Error fetching logs from http://127.0.0.1:33807: HTTP request failed: Get "http://127.0.0.1:33807": context deadline exceeded
+--- PASS: TestHTTPCollector (0.50s)
+=== RUN   TestCollectorFactory
+DEBUG: Source URI: file:///tmp/logstream-test898067562/test.log
+    collector_test.go:164: 
+        	Error Trace:	/home/runner/work/logstreamApp/logstreamApp/tests/collector_test.go:164
+        	Error:      	Not equal: 
+        	            	expected: "file:///tmp/logstream-test898067562/test.log"
+        	            	actual  : "file://tmp/logstream-test898067562/test.log"
+        	            	
+        	            	Diff:
+        	            	--- Expected
+        	            	+++ Actual
+        	            	@@ -1 +1 @@
+        	            	-file:///tmp/logstream-test898067562/test.log
+        	            	+file://tmp/logstream-test898067562/test.log
+        	Test:       	TestCollectorFactory
+DEBUG: Source URI: http://example.com/logs
+DEBUG: Source URI: ftp://example.com
+--- FAIL: TestCollectorFactory (0.00s)
+=== RUN   TestCollectorConcurrency
+DEBUG: Attempting to access file at path: /tmp/logstream-test975554335/test2.log
+DEBUG: Attempting to access file at path: /tmp/logstream-test975554335/test0.log
+DEBUG: Attempting to access file at path: /tmp/logstream-test975554335/test1.log
+DEBUG: Processing log line: log file 1 line 1
+DEBUG: Processing log line: log file 1 line 2
+DEBUG: Processor received 2 log entries
+DEBUG: Processing log line: log file 0 line 1
+DEBUG: Processing log line: log file 2 line 1
+DEBUG: Processing log line: log file 2 line 2
+DEBUG: Processor received 2 log entries
+DEBUG: Processing log line: log file 0 line 2
+DEBUG: Processor received 2 log entries
+--- PASS: TestCollectorConcurrency (2.00s)
+=== RUN   TestPluginRegistry
+--- PASS: TestPluginRegistry (0.00s)
+=== RUN   TestPluginProcessing
+--- PASS: TestPluginProcessing (0.00s)
+=== RUN   TestPluginChain
+--- PASS: TestPluginChain (0.00s)
+=== RUN   TestPluginError
+--- PASS: TestPluginError (0.00s)
+=== RUN   TestBasePlugin
+--- PASS: TestBasePlugin (0.00s)
+=== RUN   TestProcessor
+=== RUN   TestProcessor/BasicProcessing
+DEBUG: Processor received 2 log entries
+=== RUN   TestProcessor/WithFiltering
+DEBUG: Processor received 2 log entries
+=== RUN   TestProcessor/WithTransformation
+DEBUG: Processor received 1 log entries
+=== RUN   TestProcessor/ProcessingPipeline
+DEBUG: Processor received 2 log entries
+--- PASS: TestProcessor (0.40s)
+    --- PASS: TestProcessor/BasicProcessing (0.10s)
+    --- PASS: TestProcessor/WithFiltering (0.10s)
+    --- PASS: TestProcessor/WithTransformation (0.10s)
+    --- PASS: TestProcessor/ProcessingPipeline (0.10s)
+=== RUN   TestParsingRawLogs
+=== RUN   TestParsingRawLogs/JSONParsing
+DEBUG: Processor received 1 log entries
+    processor_test.go:351: Fields: map[id:123 user:testuser]
+--- PASS: TestParsingRawLogs (0.10s)
+    --- PASS: TestParsingRawLogs/JSONParsing (0.10s)
+=== RUN   TestQueryEngineExecute
+--- PASS: TestQueryEngineExecute (0.00s)
+=== RUN   TestQueryEngineAnalyze
+=== RUN   TestQueryEngineAnalyze/FrequencyAnalysis
+=== RUN   TestQueryEngineAnalyze/CountAnalysis
+=== RUN   TestQueryEngineAnalyze/TimeSeriesAnalysis
+=== RUN   TestQueryEngineAnalyze/PatternAnalysis
+--- PASS: TestQueryEngineAnalyze (0.00s)
+    --- PASS: TestQueryEngineAnalyze/FrequencyAnalysis (0.00s)
+    --- PASS: TestQueryEngineAnalyze/CountAnalysis (0.00s)
+    --- PASS: TestQueryEngineAnalyze/TimeSeriesAnalysis (0.00s)
+    --- PASS: TestQueryEngineAnalyze/PatternAnalysis (0.00s)
+=== RUN   TestParseQuery
+=== RUN   TestParseQuery/Empty_Query
+=== RUN   TestParseQuery/Source_Filter
+=== RUN   TestParseQuery/Level_Filter
+=== RUN   TestParseQuery/Multiple_Sources
+=== RUN   TestParseQuery/Text_Filter
+=== RUN   TestParseQuery/Field_Filter
+=== RUN   TestParseQuery/Combined_Filters
+=== RUN   TestParseQuery/With_Limit
+--- PASS: TestParseQuery (0.00s)
+    --- PASS: TestParseQuery/Empty_Query (0.00s)
+    --- PASS: TestParseQuery/Source_Filter (0.00s)
+    --- PASS: TestParseQuery/Level_Filter (0.00s)
+    --- PASS: TestParseQuery/Multiple_Sources (0.00s)
+    --- PASS: TestParseQuery/Text_Filter (0.00s)
+    --- PASS: TestParseQuery/Field_Filter (0.00s)
+    --- PASS: TestParseQuery/Combined_Filters (0.00s)
+    --- PASS: TestParseQuery/With_Limit (0.00s)
+FAIL
+FAIL	github.com/mariasu11/logstreamApp/tests	5.018s
+FAIL
+Error: Process completed with exit code 1.
