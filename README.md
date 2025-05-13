@@ -32,19 +32,93 @@ mv logstream-* /usr/local/bin/logstream
 
 ## Usage
 
+### Running Locally
+
+To run LogStream locally, follow these steps:
+
+```bash
+# Build the application
+go build -o logstream ./cmd/logstream
+
+# Start the API server with web UI on port 5000
+./logstream serve -P 5000
+
+# In another terminal, collect logs from a file
+./logstream collect --sources=file://fixtures/logs/test.log
+```
+
+When running the API server, you can access the web UI at `http://localhost:5000`.
+
+### Adding Logs to LogStream
+
+LogStream supports multiple ways to add log data:
+
+1. **Using the REST API directly**:
+
+```bash
+# Add a single log entry
+curl -X POST http://localhost:5000/api/v1/logs \
+  -H "Content-Type: application/json" \
+  -d '{
+    "timestamp": "2025-05-13T00:01:00Z",
+    "source": "system",
+    "level": "info",
+    "message": "System startup complete",
+    "fields": {
+      "host": "server1.example.com",
+      "datacenter": "us-west-1"
+    }
+  }'
+
+# Add multiple log entries in batch
+curl -X POST http://localhost:5000/api/v1/logs/batch \
+  -H "Content-Type: application/json" \
+  -d @fixtures/logs/test_data.json
+```
+
+2. **Using the collect command for files**:
+
+```bash
+# Collect logs from a file (with real-time monitoring)
+./logstream collect --sources=file://path/to/your/application.log
+
+# Collect logs from multiple files
+./logstream collect --sources=file://path/to/app1.log,file://path/to/app2.log
+```
+
+3. **Using the collect command for HTTP sources**:
+
+```bash
+# Collect logs from an HTTP endpoint
+./logstream collect --sources=http://api.example.com/logs
+
+# Collect logs with authentication
+./logstream collect --sources=http://api.example.com/logs --headers="Authorization: Bearer token"
+```
+
+4. **Using the web UI**:
+
+The web UI provides an interface for viewing and filtering logs but does not currently support direct log ingestion.
+
 ### CLI Commands
 
 LogStream provides a comprehensive CLI interface with the following commands:
 
-```
+```bash
 # Start the API server
-logstream serve --host=0.0.0.0 --port=8000
+./logstream serve --host=0.0.0.0 --port=5000
 
 # Start collecting logs
-logstream collect --sources=file:///var/log/syslog,https://api.example.com/logs
+./logstream collect --sources=file://fixtures/logs/test.log,https://api.example.com/logs
 
 # Query collected logs
-logstream query "level:error" --limit=100 --from="2025-05-01T00:00:00Z"
+./logstream query "level:error" --limit=100 --from="2025-05-01T00:00:00Z"
+
+# Get help for any command
+./logstream --help
+./logstream serve --help
+./logstream collect --help
+./logstream query --help
 ```
 
 ### Configuration
