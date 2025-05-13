@@ -1,0 +1,109 @@
+# LogStream Configuration Example
+# 
+# This is a sample configuration file for LogStream that demonstrates
+# the available options and their default values.
+
+# General settings
+log_level: info  # debug, info, warn, error
+
+# Collection settings
+collect:
+  # Sources to collect logs from (file://, http://, https://)
+  sources:
+    - file:///var/log/syslog
+    - file:///var/log/auth.log
+    - https://api.example.com/logs
+  
+  # Number of worker goroutines for processing
+  workers: 4
+  
+  # Storage backend (memory or disk)
+  storage: memory
+  
+  # Path for disk storage (if storage is set to disk)
+  storage_path: ./logs
+
+# API server settings
+serve:
+  # Host to bind the server to
+  host: 0.0.0.0
+  
+  # Port to listen on
+  port: 8000
+  
+  # Storage backend (memory or disk)
+  storage: memory
+  
+  # Path for disk storage (if storage is set to disk)
+  storage_path: ./logs
+
+# Processing rules
+processor:
+  # Rules for parsing and transforming logs
+  rules:
+    # Example rule for syslog format
+    - name: syslog
+      pattern: "^([A-Z][a-z]{2}\\s+\\d+ \\d{2}:\\d{2}:\\d{2}) ([\\w\\-\\.]+) ([\\w\\-\\.]+)(\\[\\d+\\])?: (.*)$"
+      fields:
+        - timestamp
+        - host
+        - program
+        - pid
+        - message
+      timestamp_format: "Jan 2 15:04:05"
+      
+    # Example rule for JSON logs
+    - name: json
+      format: json
+      
+    # Example rule for custom log format
+    - name: custom_app
+      pattern: "^\\[(\\d{4}-\\d{2}-\\d{2} \\d{2}:\\d{2}:\\d{2}\\.\\d{3})\\] \\[(\\w+)\\] (.*)$"
+      fields:
+        - timestamp
+        - level
+        - message
+      timestamp_format: "2006-01-02 15:04:05.000"
+
+# Transformations to apply to log entries
+transform:
+  # Mask sensitive information
+  mask_fields:
+    - field: message
+      patterns:
+        - "password=\\S+"
+        - "secret=\\S+"
+      replacement: "$1=*****"
+    
+    - field: fields.credit_card
+      patterns:
+        - "\\d{4}[- ]?\\d{4}[- ]?\\d{4}[- ]?\\d{4}"
+      replacement: "XXXX-XXXX-XXXX-XXXX"
+
+# Metrics configuration
+metrics:
+  # Enable Prometheus metrics
+  prometheus: true
+  
+  # Additional dimensions for metrics
+  dimensions:
+    - source
+    - level
+
+# Plugins configuration
+plugins:
+  # Directory containing plugin .so files
+  directory: ./plugins
+  
+  # Enabled plugins
+  enabled:
+    - name: geoip
+      config:
+        db_path: ./GeoLite2-City.mmdb
+        ip_field: fields.ip
+        
+    - name: enrichment
+      config:
+        url: https://enrichment-api.example.com/v1/enrich
+        headers:
+          Authorization: Bearer ${ENRICHMENT_API_KEY}
