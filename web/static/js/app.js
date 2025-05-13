@@ -22,33 +22,8 @@ const config = {
     levelsChart: null
 };
 
-// DOM Elements
-const elements = {
-    logsTable: document.getElementById('logs-body'),
-    logsPagination: document.getElementById('logs-pagination'),
-    searchInput: document.getElementById('search-input'),
-    searchButton: document.getElementById('search-button'),
-    refreshButton: document.getElementById('refresh-logs'),
-    autoRefreshButton: document.getElementById('auto-refresh'),
-    exportButton: document.getElementById('export-logs'),
-    sourcesList: document.querySelector('.list-sources'),
-    timeRangeSelect: document.getElementById('time-range'),
-    customRangeDiv: document.getElementById('custom-range'),
-    startTimeInput: document.getElementById('start-time'),
-    endTimeInput: document.getElementById('end-time'),
-    levelCheckboxes: document.querySelectorAll('input[id^="level-"]'),
-    volumeChartCanvas: document.getElementById('logs-volume-chart'),
-    levelsChartCanvas: document.getElementById('logs-levels-chart'),
-    
-    // Modal elements
-    logDetailModal: new bootstrap.Modal(document.getElementById('logDetailModal')),
-    detailTimestamp: document.getElementById('detail-timestamp'),
-    detailLevel: document.getElementById('detail-level'),
-    detailSource: document.getElementById('detail-source'),
-    detailMessage: document.getElementById('detail-message'),
-    detailRaw: document.getElementById('detail-raw'),
-    detailFields: document.getElementById('detail-fields')
-};
+// DOM Elements - Initialize after DOM is loaded
+let elements = {};
 
 // Initialize the application when DOM is loaded
 document.addEventListener('DOMContentLoaded', () => {
@@ -57,6 +32,36 @@ document.addEventListener('DOMContentLoaded', () => {
 
 // Main initialization function
 function initApp() {
+    // Initialize DOM elements
+    elements = {
+        logsTable: document.getElementById('logs-body'),
+        logsPagination: document.getElementById('logs-pagination'),
+        searchInput: document.getElementById('search-input'),
+        searchButton: document.getElementById('search-button'),
+        refreshButton: document.getElementById('refresh-logs'),
+        autoRefreshButton: document.getElementById('auto-refresh'),
+        exportButton: document.getElementById('export-logs'),
+        sourcesList: document.querySelector('.list-sources'),
+        timeRangeSelect: document.getElementById('time-range'),
+        customRangeDiv: document.getElementById('custom-range'),
+        startTimeInput: document.getElementById('start-time'),
+        endTimeInput: document.getElementById('end-time'),
+        levelCheckboxes: document.querySelectorAll('input[id^="level-"]'),
+        volumeChartCanvas: document.getElementById('logs-volume-chart'),
+        levelsChartCanvas: document.getElementById('logs-levels-chart'),
+        
+        // Modal elements
+        logDetailModal: document.getElementById('logDetailModal') ? new bootstrap.Modal(document.getElementById('logDetailModal')) : null,
+        detailTimestamp: document.getElementById('detail-timestamp'),
+        detailLevel: document.getElementById('detail-level'),
+        detailSource: document.getElementById('detail-source'),
+        detailMessage: document.getElementById('detail-message'),
+        detailRaw: document.getElementById('detail-raw'),
+        detailFields: document.getElementById('detail-fields')
+    };
+    
+    console.log("LogStream Web UI initializing...");
+    
     // Load initial data
     loadSources();
     loadLogs();
@@ -66,6 +71,8 @@ function initApp() {
     
     // Set up event listeners
     setupEventListeners();
+    
+    console.log("LogStream Web UI initialized successfully");
 }
 
 // Load log sources from API
@@ -379,173 +386,240 @@ function updateSourceCounts(logs) {
 
 // Initialize charts
 function initCharts() {
-    // Volume chart
-    const volumeCtx = elements.volumeChartCanvas.getContext('2d');
-    config.volumeChart = new Chart(volumeCtx, {
-        type: 'line',
-        data: {
-            labels: [],
-            datasets: [{
-                label: 'Log Volume',
-                data: [],
-                backgroundColor: config.chartColors.blue,
-                borderColor: 'rgba(54, 162, 235, 1)',
-                borderWidth: 1,
-                tension: 0.3
-            }]
-        },
-        options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            scales: {
-                y: {
-                    beginAtZero: true,
-                    title: {
-                        display: true,
-                        text: 'Log Count'
-                    }
+    try {
+        console.log("Initializing charts...");
+        
+        // Volume chart
+        if (elements.volumeChartCanvas) {
+            const volumeCtx = elements.volumeChartCanvas.getContext('2d');
+            config.volumeChart = new Chart(volumeCtx, {
+                type: 'line',
+                data: {
+                    labels: [],
+                    datasets: [{
+                        label: 'Log Volume',
+                        data: [],
+                        backgroundColor: config.chartColors.blue,
+                        borderColor: 'rgba(54, 162, 235, 1)',
+                        borderWidth: 1,
+                        tension: 0.3
+                    }]
                 },
-                x: {
-                    title: {
-                        display: true,
-                        text: 'Time'
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            title: {
+                                display: true,
+                                text: 'Log Count'
+                            }
+                        },
+                        x: {
+                            title: {
+                                display: true,
+                                text: 'Time'
+                            }
+                        }
                     }
                 }
-            }
+            });
+            console.log("Volume chart initialized");
+        } else {
+            console.warn("Volume chart canvas element not found");
         }
-    });
-    
-    // Levels chart
-    const levelsCtx = elements.levelsChartCanvas.getContext('2d');
-    config.levelsChart = new Chart(levelsCtx, {
-        type: 'pie',
-        data: {
-            labels: [],
-            datasets: [{
-                data: [],
-                backgroundColor: [
-                    config.chartColors.grey,   // debug
-                    config.chartColors.blue,   // info
-                    config.chartColors.yellow, // warn
-                    config.chartColors.red     // error
-                ],
-                borderWidth: 1
-            }]
-        },
-        options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            plugins: {
-                legend: {
-                    position: 'right'
+        
+        // Levels chart
+        if (elements.levelsChartCanvas) {
+            const levelsCtx = elements.levelsChartCanvas.getContext('2d');
+            config.levelsChart = new Chart(levelsCtx, {
+                type: 'pie',
+                data: {
+                    labels: [],
+                    datasets: [{
+                        data: [],
+                        backgroundColor: [
+                            config.chartColors.grey,   // debug
+                            config.chartColors.blue,   // info
+                            config.chartColors.yellow, // warn
+                            config.chartColors.red     // error
+                        ],
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'right'
+                        }
+                    }
                 }
-            }
+            });
+            console.log("Levels chart initialized");
+        } else {
+            console.warn("Levels chart canvas element not found");
         }
-    });
+    } catch (error) {
+        console.error("Error initializing charts:", error);
+    }
 }
 
 // Update charts with new log data
 function updateCharts(logs) {
-    // Prepare data for volume chart (logs by time)
-    const timeGroups = {};
-    logs.forEach(log => {
-        // Group by hour
-        const timestamp = new Date(log.timestamp);
-        const hourFormat = timestamp.toLocaleString(undefined, {
-            year: 'numeric',
-            month: 'numeric',
-            day: 'numeric',
-            hour: 'numeric'
+    try {
+        if (!logs || !Array.isArray(logs)) {
+            console.warn("Invalid logs data for chart update:", logs);
+            return;
+        }
+        
+        // Prepare data for volume chart (logs by time)
+        const timeGroups = {};
+        logs.forEach(log => {
+            // Group by hour
+            const timestamp = new Date(log.timestamp);
+            const hourFormat = timestamp.toLocaleString(undefined, {
+                year: 'numeric',
+                month: 'numeric',
+                day: 'numeric',
+                hour: 'numeric'
+            });
+            
+            timeGroups[hourFormat] = (timeGroups[hourFormat] || 0) + 1;
         });
         
-        timeGroups[hourFormat] = (timeGroups[hourFormat] || 0) + 1;
-    });
-    
-    // Sort by time
-    const sortedTimes = Object.keys(timeGroups).sort((a, b) => {
-        return new Date(a) - new Date(b);
-    });
-    
-    // Update volume chart
-    config.volumeChart.data.labels = sortedTimes;
-    config.volumeChart.data.datasets[0].data = sortedTimes.map(time => timeGroups[time]);
-    config.volumeChart.update();
-    
-    // Prepare data for levels chart
-    const levelCounts = {
-        debug: 0,
-        info: 0,
-        warn: 0,
-        error: 0
-    };
-    
-    logs.forEach(log => {
-        const level = (log.level || 'unknown').toLowerCase();
-        if (levelCounts.hasOwnProperty(level)) {
-            levelCounts[level]++;
+        // Sort by time
+        const sortedTimes = Object.keys(timeGroups).sort((a, b) => {
+            return new Date(a) - new Date(b);
+        });
+        
+        // Update volume chart if it exists
+        if (config.volumeChart) {
+            config.volumeChart.data.labels = sortedTimes;
+            config.volumeChart.data.datasets[0].data = sortedTimes.map(time => timeGroups[time]);
+            config.volumeChart.update();
+            console.log("Volume chart updated with", sortedTimes.length, "data points");
         }
-    });
-    
-    // Update levels chart
-    config.levelsChart.data.labels = Object.keys(levelCounts);
-    config.levelsChart.data.datasets[0].data = Object.values(levelCounts);
-    config.levelsChart.update();
+        
+        // Prepare data for levels chart
+        const levelCounts = {
+            debug: 0,
+            info: 0,
+            warn: 0,
+            error: 0
+        };
+        
+        logs.forEach(log => {
+            const level = (log.level || 'unknown').toLowerCase();
+            if (levelCounts.hasOwnProperty(level)) {
+                levelCounts[level]++;
+            }
+        });
+        
+        // Update levels chart if it exists
+        if (config.levelsChart) {
+            config.levelsChart.data.labels = Object.keys(levelCounts);
+            config.levelsChart.data.datasets[0].data = Object.values(levelCounts);
+            config.levelsChart.update();
+            console.log("Levels chart updated with data:", levelCounts);
+        }
+    } catch (error) {
+        console.error("Error updating charts:", error);
+    }
 }
 
 // Set up event listeners
 function setupEventListeners() {
-    // Search button
-    elements.searchButton.addEventListener('click', () => {
-        config.currentPage = 1; // Reset to first page
-        loadLogs();
-    });
-    
-    // Search input - search on Enter
-    elements.searchInput.addEventListener('keyup', event => {
-        if (event.key === 'Enter') {
-            config.currentPage = 1; // Reset to first page
-            loadLogs();
-        }
-    });
-    
-    // Refresh button
-    elements.refreshButton.addEventListener('click', () => {
-        loadLogs();
-    });
-    
-    // Auto refresh toggle
-    elements.autoRefreshButton.addEventListener('click', function() {
-        toggleAutoRefresh();
+    try {
+        console.log("Setting up event listeners...");
         
-        // Toggle active class
-        this.classList.toggle('auto-refresh-active');
-    });
-    
-    // Export logs button
-    elements.exportButton.addEventListener('click', () => {
-        exportLogs();
-    });
-    
-    // Time range select
-    elements.timeRangeSelect.addEventListener('change', function() {
-        // Show/hide custom range inputs
-        if (this.value === 'custom') {
-            elements.customRangeDiv.classList.remove('d-none');
-        } else {
-            elements.customRangeDiv.classList.add('d-none');
-            // Reload logs with the new time range
-            loadLogs();
+        // Search button
+        if (elements.searchButton) {
+            elements.searchButton.addEventListener('click', () => {
+                config.currentPage = 1; // Reset to first page
+                loadLogs();
+            });
+            console.log("Search button event listener added");
         }
-    });
-    
-    // Custom range inputs
-    elements.startTimeInput.addEventListener('change', () => loadLogs());
-    elements.endTimeInput.addEventListener('change', () => loadLogs());
-    
-    // Level checkboxes
-    elements.levelCheckboxes.forEach(checkbox => {
-        checkbox.addEventListener('change', () => loadLogs());
-    });
+        
+        // Search input - search on Enter
+        if (elements.searchInput) {
+            elements.searchInput.addEventListener('keyup', event => {
+                if (event.key === 'Enter') {
+                    config.currentPage = 1; // Reset to first page
+                    loadLogs();
+                }
+            });
+            console.log("Search input event listener added");
+        }
+        
+        // Refresh button
+        if (elements.refreshButton) {
+            elements.refreshButton.addEventListener('click', () => {
+                loadLogs();
+            });
+            console.log("Refresh button event listener added");
+        }
+        
+        // Auto refresh toggle
+        if (elements.autoRefreshButton) {
+            elements.autoRefreshButton.addEventListener('click', function() {
+                toggleAutoRefresh();
+                
+                // Toggle active class
+                this.classList.toggle('auto-refresh-active');
+            });
+            console.log("Auto refresh button event listener added");
+        }
+        
+        // Export logs button
+        if (elements.exportButton) {
+            elements.exportButton.addEventListener('click', () => {
+                exportLogs();
+            });
+            console.log("Export button event listener added");
+        }
+        
+        // Time range select
+        if (elements.timeRangeSelect) {
+            elements.timeRangeSelect.addEventListener('change', function() {
+                // Show/hide custom range inputs
+                if (this.value === 'custom' && elements.customRangeDiv) {
+                    elements.customRangeDiv.classList.remove('d-none');
+                } else if (elements.customRangeDiv) {
+                    elements.customRangeDiv.classList.add('d-none');
+                    // Reload logs with the new time range
+                    loadLogs();
+                }
+            });
+            console.log("Time range select event listener added");
+        }
+        
+        // Custom range inputs
+        if (elements.startTimeInput) {
+            elements.startTimeInput.addEventListener('change', () => loadLogs());
+            console.log("Start time input event listener added");
+        }
+        
+        if (elements.endTimeInput) {
+            elements.endTimeInput.addEventListener('change', () => loadLogs());
+            console.log("End time input event listener added");
+        }
+        
+        // Level checkboxes
+        if (elements.levelCheckboxes) {
+            elements.levelCheckboxes.forEach(checkbox => {
+                checkbox.addEventListener('change', () => loadLogs());
+            });
+            console.log("Level checkbox event listeners added");
+        }
+        
+        console.log("All event listeners set up successfully");
+    } catch (error) {
+        console.error("Error setting up event listeners:", error);
+    }
 }
 
 // Toggle auto refresh
