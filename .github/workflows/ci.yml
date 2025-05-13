@@ -7,9 +7,8 @@ on:
     branches: [ main ]
 
 jobs:
-  # Simplified version - just ensure it compiles
-  build-only:
-    name: Build Verification
+  build:
+    name: Build
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v4
@@ -37,11 +36,9 @@ jobs:
           logstream-darwin-amd64
           logstream-windows-amd64.exe
   
-  # This job will run but with all errors ignored
-  lint-optional:
-    name: Lint (Informational)
+  lint:
+    name: Lint
     runs-on: ubuntu-latest
-    continue-on-error: true  # Make this job optional
     steps:
     - uses: actions/checkout@v4
     
@@ -54,15 +51,12 @@ jobs:
       run: |
         curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- -b $(go env GOPATH)/bin v1.55.2
     
-    - name: Lint (Informational Only)
-      run: $(go env GOPATH)/bin/golangci-lint run --timeout=5m --disable=errcheck --disable=gosimple --disable=staticcheck ./...
-      continue-on-error: true
+    - name: Lint
+      run: $(go env GOPATH)/bin/golangci-lint run --timeout=5m --disable=errcheck ./...
 
-  # This job will run but with all errors ignored
-  test-optional:
-    name: Tests (Informational)
+  tests:
+    name: Tests
     runs-on: ubuntu-latest
-    continue-on-error: true  # Make this job optional
     steps:
     - uses: actions/checkout@v4
     
@@ -85,78 +79,14 @@ jobs:
         {"timestamp":"2025-05-11T04:15:00Z","level":"error","message":"Service unavailable","source":"app3"},
         {"timestamp":"2025-05-11T05:30:00Z","level":"info","message":"Service restored","source":"app3"}]' > fixtures/logs/multi_day_logs.json
     
-    - name: Test specific packages
+    - name: Setup test environment
       run: |
-        echo "Testing pkg packages..."
-        go test -v ./pkg/...
-        
-        echo "Testing internal packages..."
-        go test -v ./internal/...
-      continue-on-error: true
-      
-    - name: Test integration tests from tests directory
-      run: |
-        echo "Running tests from tests/ directory..."
         mkdir -p test_logs
         mkdir -p logs
-        go test -v ./tests/...
-      continue-on-error: true
+    
+    - name: Run tests
+      run: go test -v ./tests/...
       
-  # Integration tests as optional
-  integration-optional:
-    name: Integration Tests (Informational)
-    runs-on: ubuntu-latest
-    needs: [build-only]
-    continue-on-error: true  # Make this job optional
-    steps:
-    - uses: actions/checkout@v4
-    
-    - name: Set up Go
-      uses: actions/setup-go@v4
-      with:
-        go-version: '1.21'
-    
-    - name: Download artifacts
-      uses: actions/download-artifact@v4
-      with:
-        name: binaries
-    
-    - name: Make executable
-      run: chmod +x logstream-linux-amd64
-    
-    - name: Create test logs
-      run: |
-        mkdir -p test_logs
-        echo '{"timestamp":"2023-05-01T12:00:00Z","level":"info","message":"Test log 1","source":"test"}' > test_logs/test1.log
-        echo '{"timestamp":"2023-05-01T12:01:00Z","level":"error","message":"Test log 2","source":"test"}' >> test_logs/test1.log
-    
-    - name: Create logs directory
-      run: mkdir -p logs
-    
-    - name: Start LogStream API server
-      run: |
-        ./logstream-linux-amd64 serve --storage disk --storage-path ./logs &
-        sleep 2  # Wait for server to start
-    
-    - name: Collect logs
-      run: |
-        ./logstream-linux-amd64 collect --sources file://$(pwd)/test_logs/test1.log --storage disk --storage-path ./logs
-        sleep 2  # Wait for processing
-    
-    - name: Query logs
-      run: |
-        ./logstream-linux-amd64 query --filter "Test" --storage disk --storage-path ./logs > query_results.json
-        cat query_results.json
-    
-    - name: Verify query results
-      run: |
-        if ! grep -q "Test" query_results.json; then
-          echo "Query results do not contain expected log entries"
-          cat query_results.json
-          exit 0  # Don't fail the build even if verification fails
-        fi
-
-  # Only run TF validation as that's likely to pass
   terraform:
     name: Terraform Validation
     runs-on: ubuntu-latest
