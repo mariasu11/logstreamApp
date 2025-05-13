@@ -4,6 +4,7 @@ import (
         "encoding/json"
         "net/http"
         "strconv"
+        "strings"
         "time"
 
         "github.com/hashicorp/go-hclog"
@@ -163,8 +164,14 @@ func (h *Handlers) GetStats(w http.ResponseWriter, r *http.Request) {
 func (h *Handlers) ExecuteQuery(w http.ResponseWriter, r *http.Request) {
         // Parse request body
         var queryRequest struct {
-                Filter string `json:"filter"`
-                Limit  int    `json:"limit"`
+                Filter     string    `json:"filter"`
+                Limit      int       `json:"limit"`
+                From       string    `json:"from,omitempty"`
+                To         string    `json:"to,omitempty"`
+                Sources    []string  `json:"sources,omitempty"`
+                Levels     []string  `json:"levels,omitempty"`
+                SortBy     string    `json:"sort_by,omitempty"`
+                SortOrder  string    `json:"sort_order,omitempty"`
         }
 
         if err := json.NewDecoder(r.Body).Decode(&queryRequest); err != nil {
@@ -174,9 +181,61 @@ func (h *Handlers) ExecuteQuery(w http.ResponseWriter, r *http.Request) {
 
         // Build query
         query := models.NewQuery()
+        
+        // Parse source:value filter format
         if queryRequest.Filter != "" {
-                query = query.WithFilter(queryRequest.Filter)
+                if strings.HasPrefix(queryRequest.Filter, "source:") {
+                        source := strings.TrimPrefix(queryRequest.Filter, "source:")
+                        query = query.WithSources(source)
+                } else if strings.HasPrefix(queryRequest.Filter, "level:") {
+                        level := strings.TrimPrefix(queryRequest.Filter, "level:")
+                        query = query.WithLevels(level)
+                } else {
+                        // Use as general text filter
+                        query = query.WithFilter(queryRequest.Filter)
+                }
         }
+        
+        // Apply sources filter if provided
+        if len(queryRequest.Sources) > 0 {
+                query = query.WithSources(queryRequest.Sources...)
+        }
+
+        // Apply levels filter if provided
+        if len(queryRequest.Levels) > 0 {
+                query = query.WithLevels(queryRequest.Levels...)
+        }
+
+        // Parse time range if provided
+        var from, to time.Time
+        var err error
+        
+        if queryRequest.From != "" {
+                from, err = time.Parse(time.RFC3339, queryRequest.From)
+                if err != nil {
+                        h.respondWithError(w, http.StatusBadRequest, "Invalid 'from' timestamp: "+err.Error())
+                        return
+                }
+        }
+        
+        if queryRequest.To != "" {
+                to, err = time.Parse(time.RFC3339, queryRequest.To)
+                if err != nil {
+                        h.respondWithError(w, http.StatusBadRequest, "Invalid 'to' timestamp: "+err.Error())
+                        return
+                }
+        }
+        
+        if !from.IsZero() || !to.IsZero() {
+                query = query.WithTimeRange(from, to)
+        }
+        
+        // Apply sorting if provided
+        if queryRequest.SortBy != "" && queryRequest.SortOrder != "" {
+                query = query.WithSort(queryRequest.SortBy, queryRequest.SortOrder)
+        }
+        
+        // Apply limit if provided
         if queryRequest.Limit > 0 {
                 query = query.WithLimit(queryRequest.Limit)
         }
