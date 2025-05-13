@@ -65,8 +65,11 @@ func (s *Server) setupMiddleware() {
 
 // setupRoutes configures the API routes
 func (s *Server) setupRoutes() {
-        // Create handlers
+        // Create API handlers
         handlers := NewHandlers(s.storage, s.logger)
+        
+        // Create Web UI handler
+        webHandler := NewWebHandler(s.logger)
         
         // API v1 routes
         s.Router.Route("/api/v1", func(r chi.Router) {
@@ -77,6 +80,7 @@ func (s *Server) setupRoutes() {
                         r.Post("/batch", handlers.StoreLogs)
                         r.Get("/sources", handlers.GetSources)
                         r.Get("/stats", handlers.GetStats)
+                        r.Get("/export", handlers.GetLogs) // Alias for logs export
                 })
                 
                 // Query routes
@@ -92,8 +96,11 @@ func (s *Server) setupRoutes() {
         // Prometheus metrics endpoint
         s.Router.Handle("/metrics", promhttp.Handler())
         
-        // Documentation
-        s.Router.Get("/", handlers.GetDocs)
+        // API documentation
+        s.Router.Get("/api", handlers.GetDocs)
+        
+        // Web UI routes
+        webHandler.RegisterRoutes(s.Router)
 }
 
 // Start begins the HTTP server

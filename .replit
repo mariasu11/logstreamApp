@@ -30,11 +30,15 @@ args = "BuildAndTest"
 
 [[workflows.workflow.tasks]]
 task = "workflow.run"
+args = "CollectLogs"
+
+[[workflows.workflow.tasks]]
+task = "workflow.run"
 args = "ServeAPI"
 
 [[workflows.workflow.tasks]]
 task = "workflow.run"
-args = "CollectLogs"
+args = "LogCollector"
 
 [[workflows.workflow]]
 name = "LogStream"
@@ -69,21 +73,29 @@ task = "shell.exec"
 args = "go build -o logstream ./cmd/logstream && ./logstream --help"
 
 [[workflows.workflow]]
-name = "ServeAPI"
-author = "agent"
-
-[[workflows.workflow.tasks]]
-task = "shell.exec"
-args = "go run cmd/logstream/root.go cmd/logstream/main.go cmd/logstream/serve.go serve --host=0.0.0.0 --port=5000"
-waitForPort = 5000
-
-[[workflows.workflow]]
 name = "CollectLogs"
 author = "agent"
 
 [[workflows.workflow.tasks]]
 task = "shell.exec"
 args = "go run cmd/logstream/root.go cmd/logstream/main.go cmd/logstream/collect.go collect --sources=file://test_logs/test.log"
+
+[[workflows.workflow]]
+name = "ServeAPI"
+author = "agent"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "go build -o logstream ./cmd/logstream && ./logstream serve -P 5000"
+waitForPort = 5000
+
+[[workflows.workflow]]
+name = "LogCollector"
+author = "agent"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "go build -o logstream ./cmd/logstream && ./logstream collect --sources=file://test_logs/test.log"
 
 [deployment]
 run = ["sh", "-c", "go run cmd/logstream/root.go cmd/logstream/main.go cmd/logstream/serve.go --help"]

@@ -1,0 +1,147 @@
+/* Custom styles for LogStream Web UI */
+
+/* General styling */
+body {
+    background-color: #f8f9fa;
+}
+
+/* Log level styling */
+.level-badge {
+    display: inline-block;
+    padding: 0.25em 0.6em;
+    font-size: 75%;
+    font-weight: 700;
+    text-align: center;
+    white-space: nowrap;
+    vertical-align: baseline;
+    border-radius: 0.25rem;
+}
+
+.level-debug {
+    background-color: #6c757d;
+    color: white;
+}
+
+.level-info {
+    background-color: #0d6efd;
+    color: white;
+}
+
+.level-warn {
+    background-color: #ffc107;
+    color: #212529;
+}
+
+.level-error {
+    background-color: #dc3545;
+    color: white;
+}
+
+/* Source styling */
+.source-badge {
+    background-color: #e9ecef;
+    color: #495057;
+    padding: 0.25em 0.6em;
+    border-radius: 0.25rem;
+    display: inline-block;
+}
+
+/* Table styling */
+.logs-table {
+    font-size: 0.9rem;
+    table-layout: fixed;
+}
+
+.logs-table th, .logs-table td {
+    vertical-align: middle;
+}
+
+.logs-table th:nth-child(1), .logs-table td:nth-child(1) { /* Timestamp */
+    width: 15%;
+}
+
+.logs-table th:nth-child(2), .logs-table td:nth-child(2) { /* Level */
+    width: 10%;
+}
+
+.logs-table th:nth-child(3), .logs-table td:nth-child(3) { /* Source */
+    width: 15%;
+}
+
+.logs-table th:nth-child(4), .logs-table td:nth-child(4) { /* Message */
+    width: 50%;
+}
+
+.logs-table th:nth-child(5), .logs-table td:nth-child(5) { /* Actions */
+    width: 10%;
+}
+
+.logs-table tbody tr:hover {
+    cursor: pointer;
+    background-color: rgba(0, 123, 255, 0.05);
+}
+
+.logs-table .message-cell {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* Sidebar styling */
+.list-sources .badge {
+    background-color: #e9ecef;
+    color: #495057;
+}
+
+.list-sources .active {
+    background-color: #0d6efd;
+    color: white;
+}
+
+/* Chart containers */
+.chart-container {
+    position: relative;
+    margin: auto;
+}
+
+/* Source stats cards */
+.source-stat-card {
+    transition: transform 0.3s;
+}
+
+.source-stat-card:hover {
+    transform: translateY(-5px);
+}
+
+/* Active status indicator for auto-refresh */
+.auto-refresh-active {
+    background-color: #198754 !important;
+    color: white !important;
+}
+
+/* Loader animation */
+.loader {
+    border: 4px solid #f3f3f3;
+    border-radius: 50%;
+    border-top: 4px solid #3498db;
+    width: 24px;
+    height: 24px;
+    animation: spin 1s linear infinite;
+    display: inline-block;
+    margin-right: 10px;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* Responsive font size adjustments */
+@media (max-width: 768px) {
+    .logs-table {
+        font-size: 0.75rem;
+    }
+    .card-title {
+        font-size: 1.1rem;
+    }
+}
