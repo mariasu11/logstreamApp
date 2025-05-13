@@ -513,10 +513,12 @@ function updateCharts(logs) {
             timeGroups[hourFormat] = (timeGroups[hourFormat] || 0) + 1;
         });
         
-        // Sort by time
+        // Sort by time (oldest to newest)
         const sortedTimes = Object.keys(timeGroups).sort((a, b) => {
             return new Date(a) - new Date(b);
         });
+        
+        console.log("Time data points:", sortedTimes);
         
         // Update volume chart if it exists
         if (config.volumeChart) {
@@ -562,6 +564,8 @@ function setupEventListeners() {
         if (elements.searchButton) {
             elements.searchButton.addEventListener('click', () => {
                 config.currentPage = 1; // Reset to first page
+                const searchQuery = elements.searchInput ? elements.searchInput.value.trim() : "";
+                console.log(`Search button clicked, query: ${searchQuery}`);
                 loadLogs();
             });
             console.log("Search button event listener added");
@@ -572,6 +576,8 @@ function setupEventListeners() {
             elements.searchInput.addEventListener('keyup', event => {
                 if (event.key === 'Enter') {
                     config.currentPage = 1; // Reset to first page
+                    const searchQuery = elements.searchInput.value.trim();
+                    console.log(`Search input Enter pressed, query: ${searchQuery}`);
                     loadLogs();
                 }
             });
