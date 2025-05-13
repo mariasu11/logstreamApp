@@ -114,6 +114,9 @@ func (fc *FileCollector) Start(ctx context.Context) error {
                                         Message:   line, // Use raw line as message until processed
                                 }
                                 
+                                // Debug output for log parsing
+                                fmt.Printf("DEBUG: Processing log line: %s\n", line)
+                                
                                 batch = append(batch, entry)
                                 
                                 // Process batch if it's full
