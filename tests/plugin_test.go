@@ -2,7 +2,7 @@ package tests
 
 import (
         "fmt"
-        "io/ioutil"
+        "io"
         "testing"
 
         "github.com/stretchr/testify/assert"
@@ -54,7 +54,7 @@ func (p *MockPlugin) ProcessLogEntry(entry *models.LogEntry) error {
 func TestPluginRegistry(t *testing.T) {
         // Create a logger that discards output
         logger := hclog.New(&hclog.LoggerOptions{
-                Output: ioutil.Discard,
+                Output: io.Discard,
                 Level:  hclog.Debug,
         })
 

@@ -46,12 +46,12 @@ func (m *mockProcessor) AddPlugin(p plugin.Plugin) processor.Processor {
 
 func TestFileCollector(t *testing.T) {
         // Create a temporary log file
-        tmpDir, err := ioutil.TempDir("", "logstream-test")
+        tmpDir, err := os.MkdirTemp("", "logstream-test")
         require.NoError(t, err)
         defer os.RemoveAll(tmpDir)
 
         logFile := filepath.Join(tmpDir, "test.log")
-        err = ioutil.WriteFile(logFile, []byte("test log entry 1\ntest log entry 2\n"), 0644)
+        err = os.WriteFile(logFile, []byte("test log entry 1\ntest log entry 2\n"), 0644)
         require.NoError(t, err)
 
         // Create mock processor
