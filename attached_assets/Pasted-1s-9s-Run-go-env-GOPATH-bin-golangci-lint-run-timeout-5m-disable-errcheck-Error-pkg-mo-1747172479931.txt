@@ -1,0 +1,31 @@
+1s
+9s
+Run $(go env GOPATH)/bin/golangci-lint run --timeout=5m --disable=errcheck ./...
+Error: pkg/models/query.go:183:7: type `Alias` is unused (unused)
+	type Alias TimeRange
+	     ^
+Error: pkg/models/query.go:205:7: type `Alias` is unused (unused)
+	type Alias TimeRange
+	     ^
+Error: internal/query/query.go:344:6: func `parseTime` is unused (unused)
+func parseTime(timeStr string) models.Timestamp {
+     ^
+Error: internal/query/query.go:310:41: ineffectual assignment to value2 (ineffassign)
+                                        value2 = entry.Source
+                                        ^
+Error: internal/query/query.go:312:41: ineffectual assignment to value2 (ineffassign)
+                                        value2 = entry.Level
+                                        ^
+Error: internal/query/query.go:315:49: ineffectual assignment to value2 (ineffassign)
+                                                value2 = fmt.Sprintf("%v", fieldValue)
+                                                ^
+Error: tests/api_test.go:7:9: SA1019: "io/ioutil" has been deprecated since Go 1.19: As of Go 1.16, the same functionality is now provided by package [io] or package [os], and those implementations should be preferred in new code. See the specific function documentation for details. (staticcheck)
+        "io/ioutil"
+        ^
+Error: tests/collector_test.go:6:9: SA1019: "io/ioutil" has been deprecated since Go 1.19: As of Go 1.16, the same functionality is now provided by package [io] or package [os], and those implementations should be preferred in new code. See the specific function documentation for details. (staticcheck)
+        "io/ioutil"
+        ^
+Error: tests/plugin_test.go:5:9: SA1019: "io/ioutil" has been deprecated since Go 1.19: As of Go 1.16, the same functionality is now provided by package [io] or package [os], and those implementations should be preferred in new code. See the specific function documentation for details. (staticcheck)
+        "io/ioutil"
+        ^
+Error: Process completed with exit code 1.
