@@ -513,12 +513,21 @@ function updateCharts(logs) {
             timeGroups[hourFormat] = (timeGroups[hourFormat] || 0) + 1;
         });
         
-        // Sort by time (oldest to newest)
-        const sortedTimes = Object.keys(timeGroups).sort((a, b) => {
-            return new Date(a) - new Date(b);
+        // Get time keys
+        const timeKeys = Object.keys(timeGroups);
+        
+        // Parse dates for proper sorting
+        const dateMap = new Map();
+        timeKeys.forEach(key => {
+            dateMap.set(key, new Date(key));
         });
         
-        console.log("Time data points:", sortedTimes);
+        // Sort by time (oldest to newest)
+        const sortedTimes = timeKeys.sort((a, b) => {
+            return dateMap.get(a) - dateMap.get(b);
+        });
+        
+        console.log("Time data points (oldest to newest):", sortedTimes);
         
         // Update volume chart if it exists
         if (config.volumeChart) {

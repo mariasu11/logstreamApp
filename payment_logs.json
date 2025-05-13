@@ -1,0 +1,6 @@
+[
+  {"timestamp":"2025-05-11T09:15:00Z","level":"info","message":"Payment gateway initialized","source":"app3","status":"connected"},
+  {"timestamp":"2025-05-11T10:30:00Z","level":"info","message":"Payment received","source":"app3","amount":99.95,"transaction_id":"tx9876"},
+  {"timestamp":"2025-05-12T11:45:00Z","level":"warn","message":"Payment retry scheduled","source":"app3","reason":"network timeout"},
+  {"timestamp":"2025-05-12T14:20:00Z","level":"error","message":"Credit card payment declined","source":"app3","reason":"insufficient funds"}
+]
