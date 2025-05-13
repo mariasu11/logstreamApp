@@ -1,253 +1,253 @@
 package tests
 
 import (
-	"bytes"
-	"context"
-	"encoding/json"
-	"io/ioutil"
-	"net/http"
-	"net/http/httptest"
-	"testing"
-	"time"
+        "bytes"
+        "context"
+        "encoding/json"
+        "io/ioutil"
+        "net/http"
+        "net/http/httptest"
+        "testing"
+        "time"
 
-	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
-	"github.com/hashicorp/go-hclog"
+        "github.com/stretchr/testify/assert"
+        "github.com/stretchr/testify/require"
+        "github.com/hashicorp/go-hclog"
 
-	"github.com/yourusername/logstream/internal/api"
-	"github.com/yourusername/logstream/internal/storage"
-	"github.com/yourusername/logstream/pkg/models"
+        "github.com/yourusername/logstream/internal/api"
+        "github.com/yourusername/logstream/internal/storage"
+        "github.com/yourusername/logstream/pkg/models"
 )
 
 func TestAPIServer(t *testing.T) {
-	// Create a logger that discards output
-	logger := hclog.New(&hclog.LoggerOptions{
-		Output: ioutil.Discard,
-		Level:  hclog.Debug,
-	})
+        // Create a logger that discards output
+        logger := hclog.New(&hclog.LoggerOptions{
+                Output: ioutil.Discard,
+                Level:  hclog.Debug,
+        })
 
-	// Create in-memory storage
-	memStorage := storage.NewMemoryStorage()
+        // Create in-memory storage
+        memStorage := storage.NewMemoryStorage()
 
-	// Add some test log entries
-	ctx := context.Background()
-	
-	testEntries := []*models.LogEntry{
-		{
-			Timestamp: time.Now().Add(-5 * time.Minute),
-			Source:    "app1",
-			Level:     "info",
-			Message:   "Application started",
-			Fields: map[string]interface{}{
-				"version": "1.0.0",
-			},
-		},
-		{
-			Timestamp: time.Now().Add(-3 * time.Minute),
-			Source:    "app1",
-			Level:     "error",
-			Message:   "Database connection failed",
-			Fields: map[string]interface{}{
-				"error": "connection refused",
-			},
-		},
-		{
-			Timestamp: time.Now().Add(-1 * time.Minute),
-			Source:    "app2",
-			Level:     "info",
-			Message:   "Request processed",
-			Fields: map[string]interface{}{
-				"duration_ms": 150,
-				"method":      "GET",
-				"path":        "/api/users",
-			},
-		},
-	}
-	
-	for _, entry := range testEntries {
-		err := memStorage.Store(ctx, entry)
-		require.NoError(t, err)
-	}
+        // Add some test log entries
+        ctx := context.Background()
+        
+        testEntries := []*models.LogEntry{
+                {
+                        Timestamp: time.Now().Add(-5 * time.Minute),
+                        Source:    "app1",
+                        Level:     "info",
+                        Message:   "Application started",
+                        Fields: map[string]interface{}{
+                                "version": "1.0.0",
+                        },
+                },
+                {
+                        Timestamp: time.Now().Add(-3 * time.Minute),
+                        Source:    "app1",
+                        Level:     "error",
+                        Message:   "Database connection failed",
+                        Fields: map[string]interface{}{
+                                "error": "connection refused",
+                        },
+                },
+                {
+                        Timestamp: time.Now().Add(-1 * time.Minute),
+                        Source:    "app2",
+                        Level:     "info",
+                        Message:   "Request processed",
+                        Fields: map[string]interface{}{
+                                "duration_ms": 150,
+                                "method":      "GET",
+                                "path":        "/api/users",
+                        },
+                },
+        }
+        
+        for _, entry := range testEntries {
+                err := memStorage.Store(ctx, entry)
+                require.NoError(t, err)
+        }
 
-	// Create API server
-	server := api.NewServer("localhost", 8000, memStorage, logger)
+        // Create API server
+        server := api.NewServer("localhost", 8000, memStorage, logger)
 
-	// Create HTTP test server
-	testServer := httptest.NewServer(server.Router)
-	defer testServer.Close()
+        // Create HTTP test server
+        testServer := httptest.NewServer(server.Router)
+        defer testServer.Close()
 
-	// Test endpoints
-	t.Run("GetLogs", func(t *testing.T) {
-		resp, err := http.Get(testServer.URL + "/api/v1/logs")
-		require.NoError(t, err)
-		defer resp.Body.Close()
+        // Test endpoints
+        t.Run("GetLogs", func(t *testing.T) {
+                resp, err := http.Get(testServer.URL + "/api/v1/logs")
+                require.NoError(t, err)
+                defer resp.Body.Close()
 
-		assert.Equal(t, http.StatusOK, resp.StatusCode)
+                assert.Equal(t, http.StatusOK, resp.StatusCode)
 
-		var logs []*models.LogEntry
-		err = json.NewDecoder(resp.Body).Decode(&logs)
-		require.NoError(t, err)
+                var logs []*models.LogEntry
+                err = json.NewDecoder(resp.Body).Decode(&logs)
+                require.NoError(t, err)
 
-		assert.Equal(t, 3, len(logs))
-		assert.Equal(t, "Request processed", logs[0].Message) // Newest first
-	})
+                assert.Equal(t, 3, len(logs))
+                assert.Equal(t, "Request processed", logs[0].Message) // Newest first
+        })
 
-	t.Run("GetLogs_WithFilter", func(t *testing.T) {
-		resp, err := http.Get(testServer.URL + "/api/v1/logs?level=error")
-		require.NoError(t, err)
-		defer resp.Body.Close()
+        t.Run("GetLogs_WithFilter", func(t *testing.T) {
+                resp, err := http.Get(testServer.URL + "/api/v1/logs?level=error")
+                require.NoError(t, err)
+                defer resp.Body.Close()
 
-		assert.Equal(t, http.StatusOK, resp.StatusCode)
+                assert.Equal(t, http.StatusOK, resp.StatusCode)
 
-		var logs []*models.LogEntry
-		err = json.NewDecoder(resp.Body).Decode(&logs)
-		require.NoError(t, err)
+                var logs []*models.LogEntry
+                err = json.NewDecoder(resp.Body).Decode(&logs)
+                require.NoError(t, err)
 
-		assert.Equal(t, 1, len(logs))
-		assert.Equal(t, "error", logs[0].Level)
-		assert.Equal(t, "Database connection failed", logs[0].Message)
-	})
+                assert.Equal(t, 1, len(logs))
+                assert.Equal(t, "error", logs[0].Level)
+                assert.Equal(t, "Database connection failed", logs[0].Message)
+        })
 
-	t.Run("GetSources", func(t *testing.T) {
-		resp, err := http.Get(testServer.URL + "/api/v1/logs/sources")
-		require.NoError(t, err)
-		defer resp.Body.Close()
+        t.Run("GetSources", func(t *testing.T) {
+                resp, err := http.Get(testServer.URL + "/api/v1/logs/sources")
+                require.NoError(t, err)
+                defer resp.Body.Close()
 
-		assert.Equal(t, http.StatusOK, resp.StatusCode)
+                assert.Equal(t, http.StatusOK, resp.StatusCode)
 
-		var sources []string
-		err = json.NewDecoder(resp.Body).Decode(&sources)
-		require.NoError(t, err)
+                var sources []string
+                err = json.NewDecoder(resp.Body).Decode(&sources)
+                require.NoError(t, err)
 
-		assert.Equal(t, 2, len(sources))
-		assert.Contains(t, sources, "app1")
-		assert.Contains(t, sources, "app2")
-	})
+                assert.Equal(t, 2, len(sources))
+                assert.Contains(t, sources, "app1")
+                assert.Contains(t, sources, "app2")
+        })
 
-	t.Run("GetStats", func(t *testing.T) {
-		resp, err := http.Get(testServer.URL + "/api/v1/logs/stats")
-		require.NoError(t, err)
-		defer resp.Body.Close()
+        t.Run("GetStats", func(t *testing.T) {
+                resp, err := http.Get(testServer.URL + "/api/v1/logs/stats")
+                require.NoError(t, err)
+                defer resp.Body.Close()
 
-		assert.Equal(t, http.StatusOK, resp.StatusCode)
+                assert.Equal(t, http.StatusOK, resp.StatusCode)
 
-		var stats storage.StorageStats
-		err = json.NewDecoder(resp.Body).Decode(&stats)
-		require.NoError(t, err)
+                var stats storage.StorageStats
+                err = json.NewDecoder(resp.Body).Decode(&stats)
+                require.NoError(t, err)
 
-		assert.Equal(t, int64(3), stats.TotalEntries)
-		assert.Equal(t, int64(2), stats.EntriesBySource["app1"])
-		assert.Equal(t, int64(1), stats.EntriesBySource["app2"])
-		assert.Equal(t, int64(2), stats.EntriesByLevel["info"])
-		assert.Equal(t, int64(1), stats.EntriesByLevel["error"])
-	})
+                assert.Equal(t, int64(3), stats.TotalEntries)
+                assert.Equal(t, int64(2), stats.EntriesBySource["app1"])
+                assert.Equal(t, int64(1), stats.EntriesBySource["app2"])
+                assert.Equal(t, int64(2), stats.EntriesByLevel["info"])
+                assert.Equal(t, int64(1), stats.EntriesByLevel["error"])
+        })
 
-	t.Run("ExecuteQuery", func(t *testing.T) {
-		query := models.Query{
-			Levels: []string{"info"},
-			Limit:  10,
-		}
-		
-		queryRequest := struct {
-			Query models.Query `json:"query"`
-		}{
-			Query: query,
-		}
-		
-		queryJSON, err := json.Marshal(queryRequest)
-		require.NoError(t, err)
-		
-		resp, err := http.Post(
-			testServer.URL+"/api/v1/query", 
-			"application/json", 
-			bytes.NewBuffer(queryJSON),
-		)
-		require.NoError(t, err)
-		defer resp.Body.Close()
+        t.Run("ExecuteQuery", func(t *testing.T) {
+                query := models.Query{
+                        Levels: []string{"info"},
+                        Limit:  10,
+                }
+                
+                queryRequest := struct {
+                        Query models.Query `json:"query"`
+                }{
+                        Query: query,
+                }
+                
+                queryJSON, err := json.Marshal(queryRequest)
+                require.NoError(t, err)
+                
+                resp, err := http.Post(
+                        testServer.URL+"/api/v1/query", 
+                        "application/json", 
+                        bytes.NewBuffer(queryJSON),
+                )
+                require.NoError(t, err)
+                defer resp.Body.Close()
 
-		assert.Equal(t, http.StatusOK, resp.StatusCode)
+                assert.Equal(t, http.StatusOK, resp.StatusCode)
 
-		var results []*models.LogEntry
-		err = json.NewDecoder(resp.Body).Decode(&results)
-		require.NoError(t, err)
+                var results []*models.LogEntry
+                err = json.NewDecoder(resp.Body).Decode(&results)
+                require.NoError(t, err)
 
-		assert.Equal(t, 2, len(results))
-		assert.Equal(t, "info", results[0].Level)
-		assert.Equal(t, "info", results[1].Level)
-	})
+                assert.Equal(t, 2, len(results))
+                assert.Equal(t, "info", results[0].Level)
+                assert.Equal(t, "info", results[1].Level)
+        })
 
-	t.Run("AnalyzeLogs", func(t *testing.T) {
-		analysis := models.Analysis{
-			Type:    models.AnalysisTypeFrequency,
-			GroupBy: "level",
-		}
-		
-		analysisRequest := struct {
-			Analysis models.Analysis `json:"analysis"`
-		}{
-			Analysis: analysis,
-		}
-		
-		analysisJSON, err := json.Marshal(analysisRequest)
-		require.NoError(t, err)
-		
-		resp, err := http.Post(
-			testServer.URL+"/api/v1/query/analyze", 
-			"application/json", 
-			bytes.NewBuffer(analysisJSON),
-		)
-		require.NoError(t, err)
-		defer resp.Body.Close()
+        t.Run("AnalyzeLogs", func(t *testing.T) {
+                analysis := models.Analysis{
+                        Type:    models.AnalysisTypeFrequency,
+                        GroupBy: "level",
+                }
+                
+                analysisRequest := struct {
+                        Analysis models.Analysis `json:"analysis"`
+                }{
+                        Analysis: analysis,
+                }
+                
+                analysisJSON, err := json.Marshal(analysisRequest)
+                require.NoError(t, err)
+                
+                resp, err := http.Post(
+                        testServer.URL+"/api/v1/query/analyze", 
+                        "application/json", 
+                        bytes.NewBuffer(analysisJSON),
+                )
+                require.NoError(t, err)
+                defer resp.Body.Close()
 
-		assert.Equal(t, http.StatusOK, resp.StatusCode)
+                assert.Equal(t, http.StatusOK, resp.StatusCode)
 
-		var result models.AnalysisResult
-		err = json.NewDecoder(resp.Body).Decode(&result)
-		require.NoError(t, err)
+                var result models.AnalysisResult
+                err = json.NewDecoder(resp.Body).Decode(&result)
+                require.NoError(t, err)
 
-		assert.Equal(t, models.AnalysisTypeFrequency, result.Type)
-		assert.Equal(t, int64(2), result.Frequency["info"])
-		assert.Equal(t, int64(1), result.Frequency["error"])
-	})
+                assert.Equal(t, models.AnalysisTypeFrequency, result.Type)
+                assert.Equal(t, int64(2), result.Frequency["info"])
+                assert.Equal(t, int64(1), result.Frequency["error"])
+        })
 
-	t.Run("HealthCheck", func(t *testing.T) {
-		resp, err := http.Get(testServer.URL + "/api/v1/health")
-		require.NoError(t, err)
-		defer resp.Body.Close()
+        t.Run("HealthCheck", func(t *testing.T) {
+                resp, err := http.Get(testServer.URL + "/api/v1/health")
+                require.NoError(t, err)
+                defer resp.Body.Close()
 
-		assert.Equal(t, http.StatusOK, resp.StatusCode)
+                assert.Equal(t, http.StatusOK, resp.StatusCode)
 
-		var health map[string]string
-		err = json.NewDecoder(resp.Body).Decode(&health)
-		require.NoError(t, err)
+                var health map[string]string
+                err = json.NewDecoder(resp.Body).Decode(&health)
+                require.NoError(t, err)
 
-		assert.Equal(t, "ok", health["status"])
-	})
+                assert.Equal(t, "ok", health["status"])
+        })
 
-	t.Run("GetDocs", func(t *testing.T) {
-		resp, err := http.Get(testServer.URL + "/")
-		require.NoError(t, err)
-		defer resp.Body.Close()
+        t.Run("GetDocs", func(t *testing.T) {
+                resp, err := http.Get(testServer.URL + "/")
+                require.NoError(t, err)
+                defer resp.Body.Close()
 
-		assert.Equal(t, http.StatusOK, resp.StatusCode)
+                assert.Equal(t, http.StatusOK, resp.StatusCode)
 
-		var docs map[string]interface{}
-		err = json.NewDecoder(resp.Body).Decode(&docs)
-		require.NoError(t, err)
+                var docs map[string]interface{}
+                err = json.NewDecoder(resp.Body).Decode(&docs)
+                require.NoError(t, err)
 
-		assert.Equal(t, "LogStream API", docs["name"])
-	})
+                assert.Equal(t, "LogStream API", docs["name"])
+        })
 
-	t.Run("Metrics", func(t *testing.T) {
-		resp, err := http.Get(testServer.URL + "/metrics")
-		require.NoError(t, err)
-		defer resp.Body.Close()
+        t.Run("Metrics", func(t *testing.T) {
+                resp, err := http.Get(testServer.URL + "/metrics")
+                require.NoError(t, err)
+                defer resp.Body.Close()
 
-		assert.Equal(t, http.StatusOK, resp.StatusCode)
-		body, err := ioutil.ReadAll(resp.Body)
-		require.NoError(t, err)
+                assert.Equal(t, http.StatusOK, resp.StatusCode)
+                body, err := ioutil.ReadAll(resp.Body)
+                require.NoError(t, err)
 
-		// Prometheus metrics format contains metric names
-		assert.Contains(t, string(body), "logstream_")
-	})
+                // Prometheus metrics format contains metric names
+                assert.Contains(t, string(body), "logstream_")
+        })
 }

@@ -18,7 +18,7 @@ import (
 type Server struct {
         host       string
         port       int
-        router     *chi.Mux
+        Router     *chi.Mux  // Exported for testing
         logger     hclog.Logger
         storage    storage.Storage
         httpServer *http.Server
@@ -32,7 +32,7 @@ func NewServer(host string, port int, storage storage.Storage, logger hclog.Logg
         server := &Server{
                 host:    host,
                 port:    port,
-                router:  r,
+                Router:  r,
                 logger:  logger,
                 storage: storage,
         }
@@ -49,18 +49,18 @@ func NewServer(host string, port int, storage storage.Storage, logger hclog.Logg
 // setupMiddleware configures the middleware stack
 func (s *Server) setupMiddleware() {
         // Standard middleware
-        s.router.Use(middleware.RequestID)
-        s.router.Use(middleware.RealIP)
-        s.router.Use(LoggerMiddleware(s.logger))
-        s.router.Use(middleware.Recoverer)
-        s.router.Use(middleware.Timeout(60 * time.Second))
+        s.Router.Use(middleware.RequestID)
+        s.Router.Use(middleware.RealIP)
+        s.Router.Use(LoggerMiddleware(s.logger))
+        s.Router.Use(middleware.Recoverer)
+        s.Router.Use(middleware.Timeout(60 * time.Second))
         
         // CORS middleware
-        s.router.Use(middleware.AllowContentType("application/json"))
-        s.router.Use(middleware.SetHeader("Content-Type", "application/json"))
+        s.Router.Use(middleware.AllowContentType("application/json"))
+        s.Router.Use(middleware.SetHeader("Content-Type", "application/json"))
         
         // Custom middleware
-        s.router.Use(MetricsMiddleware)
+        s.Router.Use(MetricsMiddleware)
 }
 
 // setupRoutes configures the API routes
@@ -69,7 +69,7 @@ func (s *Server) setupRoutes() {
         handlers := NewHandlers(s.storage, s.logger)
         
         // API v1 routes
-        s.router.Route("/api/v1", func(r chi.Router) {
+        s.Router.Route("/api/v1", func(r chi.Router) {
                 // Log routes
                 r.Route("/logs", func(r chi.Router) {
                         r.Get("/", handlers.GetLogs)
@@ -90,10 +90,10 @@ func (s *Server) setupRoutes() {
         })
         
         // Prometheus metrics endpoint
-        s.router.Handle("/metrics", promhttp.Handler())
+        s.Router.Handle("/metrics", promhttp.Handler())
         
         // Documentation
-        s.router.Get("/", handlers.GetDocs)
+        s.Router.Get("/", handlers.GetDocs)
 }
 
 // Start begins the HTTP server
@@ -103,7 +103,7 @@ func (s *Server) Start() error {
         
         s.httpServer = &http.Server{
                 Addr:    addr,
-                Handler: s.router,
+                Handler: s.Router,
         }
         
         return s.httpServer.ListenAndServe()
