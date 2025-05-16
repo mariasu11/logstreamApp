@@ -1,0 +1,46 @@
+# Go specific ignores
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+*.test
+*.out
+go.work
+
+# Compiled Object files, Static and Dynamic libs
+*.o
+*.a
+*.so
+
+# Binary output directories
+/bin/
+/obj/
+
+# Replit specific files
+.replit
+.cache/
+.upm/
+.config/
+.breakpoints
+
+# Log files
+*.log
+
+# Runtime data
+/logs/
+*.pid
+
+# IDE specific files
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# OS specific files
+.DS_Store
+Thumbs.db
+
+# Compiled binary
+/logstream
